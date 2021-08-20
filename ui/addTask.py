@@ -65,6 +65,7 @@ class addTask(QDialog, Ui_addTask):
         self.exec()
         self.exec_()
 
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+Stream Sender
+author: niub
+email: niub@jzkjgroup.com
+"""
 
-"""
-Module implementing mainWindow.
-"""
+
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
@@ -10,7 +13,7 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import QThread
 from PyQt5 import QtGui
 
-from Ui_Push_Video_Stream import Ui_MainWindow
+from .Ui_Push_Video_Stream import Ui_MainWindow
 import socket
 import re
 import subprocess
@@ -46,8 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.on_pushButton_refresh_clicked()
 
-
-    #添加任务
+    # 添加任务
     @pyqtSlot()
     def on_pushButton_add_clicked(self):
         """
@@ -93,7 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ffTh.start()
         # self.textBrowser.append(filePath + videoFormat + protocol + source_ip + multiCast_ip + port + "是")
 
-    #刷新，获取设备上所有IPv4接口地址
+    # 刷新，获取设备上所有IPv4接口地址
     @pyqtSlot()
     def on_pushButton_refresh_clicked(self):
         """
@@ -105,13 +107,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ipAddr = addr[-1][0]
             print(ipAddr)
             ipv4 = re.findall(r"\d+\.\d+\.\d+\.\d+", ipAddr)
-            if len(ipv4) != 0 :
-                print("combox add", ipv4[0])
-                self.comboBox_ip.addItem("")
-                self.comboBox_ip.setItemText(i, self._translate("MainWindow", ipv4[0]))
+            if len(ipv4) == 0 or not ipv4[0]:
+                continue
+            print("combox add", ipv4[0])
+            self.comboBox_ip.addItem("")
+            self.comboBox_ip.setItemText(i, self._translate("MainWindow", ipv4[0]))
             i += 1
 
-    #获取文件路径
+    # 获取文件路径
     @pyqtSlot()
     def on_pushButton_openPath_clicked(self):
         """
@@ -119,15 +122,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         print("点击选择文件")
         try:
-            download_path = QtWidgets.QFileDialog.getOpenFileName(self, u"选择视频文件", "/",
-                                                                  "vedio Files(*" + self.videoFormat + ")")
-            # print(download_path[0])
+            files = QtWidgets.QFileDialog.getOpenFileNames(self, u"选择视频文件", "/",
+                                                           "vedio Files(*" + self.videoFormat + ")")
+            print(files)
             self.lineEdit_filePath.clear()
-            self.lineEdit_filePath.setText(self._translate("MainWindow", download_path[0]))
+            self.lineEdit_filePath.setText(self._translate("MainWindow", ', '.join(files[0])))
         except Exception as e:
             print(e)
 
-    #更改视频文件格式
+    # 更改视频文件格式
     @pyqtSlot(str)
     def on_comboBox_videoFormat_currentTextChanged(self, p0):
         """
@@ -198,7 +201,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         font.setPointSize(12)
         return font
 
-
     # 线程开始启动
     @pyqtSlot()
     def on_pushButton_start_clicked(self):
@@ -232,7 +234,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget.setItem(row, 6, item)
         except Exception as e:
             print(e)
-
 
     # 任务删除
     @pyqtSlot()
@@ -271,6 +272,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(e)
             finally:
                 self.tableWidget.removeRow(0)
+
     # 打开配置
     @pyqtSlot()
     def on_pushButton_open_clicked(self):
@@ -296,8 +298,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
-
-    #保存配置
+    # 保存配置
     @pyqtSlot()
     def on_pushButton_save_clicked(self):
         """
@@ -369,7 +370,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class FfmpegThread(QThread):
+
     signal_stop = pyqtSignal()
+
     def __init__(self, filePath, videoFormat, protocol, source_ip, multiCast_ip, port, parent=None):
         super(FfmpegThread, self).__init__(parent)
         self.filePath = filePath
@@ -382,47 +385,59 @@ class FfmpegThread(QThread):
         # ffmpeg -re -stream_loop -1 -i E:\BaiduYunDownload\zuiyufa.mp4  -vcodec libx264 -acodec copy -f mpegts udp://238.1.238.1:50001
         # ffmpeg -re -stream_loop -1 -i C:\Users\Reiner\Desktop\SNC智取威虎山_截取.ts -vcodec copy -f mpegts udp://238.1.238.1:50001
 
-    def run(self):
-        if self.protocol == "UDP":
-            if self.videoFormat == "MPEG4":
-                self.ff = ffmpy3.FFmpeg(
-                    inputs={self.filePath: '-re -stream_loop -1'},
-                    outputs={'udp://' + self.multiCast_ip + ':' + self.port: '-vcodec libx264 -acodec copy -f mpegts'}
-                )
-            elif self.videoFormat == "TS":
-                self.ff = ffmpy3.FFmpeg(
-                    inputs={self.filePath: '-re -stream_loop -1'},
-                    outputs={'udp://' + self.multiCast_ip + ':' + self.port: '-vcodec copy -f mpegts'}
-                )
-        elif self.protocol == "RTP":
-            return
-        elif self.protocol == "RTMP":
-            return
-        else:
-            print("协议匹配错误")
-            return
-
-        # self.ff.cmd
-        try:
-            self.ff.run()
-        except Exception as e:
-            print(e)
-            self.signal_stop.emit()
-
     def stop(self):
         try:
             pid = self.ff.process.pid
             print("pid", pid)
             cmd = "taskkill /pid " + str(pid) + " -t -f"
             pp = subprocess.Popen(args=cmd,
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE,
-                                      shell=True)
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  shell=True)
             out = str(pp.stdout.read(), encoding="utf-8")
             print('out:', out)
         except Exception as e:
             print(e)
+
+    def run(self):
+        files = self.filePath.split(', ')
+        if len(files) == 1:
+            loopType = -1
+        else:
+            loopType = 0
+        print(files)
+        for file in files:
+            if self.protocol == "UDP":
+                if self.videoFormat == "MPEG4":
+                    self.ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re -stream_loop ' + str(loopType)},
+                        outputs={'udp://' + self.multiCast_ip + ':' + self.port: '-vcodec libx264 -acodec copy -f mpegts'}
+                    )
+                elif self.videoFormat == "TS":
+                    self.ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re -stream_loop ' + str(loopType)},
+                        outputs={'udp://' + self.multiCast_ip + ':' + self.port: '-vcodec copy -f mpegts'}
+                    )
+
+            elif self.protocol == "RTP":
+                return
+            elif self.protocol == "RTMP":
+                return
+            else:
+                print("协议匹配错误")
+                return
+
+            # self.ff.cmd
+            try:
+                # self.ff.run(stderr=subprocess.PIPE)
+                self.ff.run()
+            except Exception as e:
+                self.signal_stop.emit()
+                print(e)
+
+
+
 
 if __name__ == "__main__":
     import sys

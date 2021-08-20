@@ -12,9 +12,9 @@ import os
 import re
 
 Version = "v0.0.01"
-Computer_Digits = 'x86'
+Computer_Digits = 'x64'
 TypeNum = 2
-pyVer = "3.8.8"
+pyVer = "3.8.5"
 FileList = [
     {
         'name': "main.py",
@@ -226,14 +226,12 @@ def packaging():
 if __name__ == "__main__":
     PackageArgs['isClean'] = True
     PackageArgs['hiddenImport'] = [
-        'dao.secondimpl.useractionimpl',
-        'pymysql'
+
     ]
     PackageArgs['addData'] = [
-        "pic;pic",
-        "ui/style;ui/style"
+        "pic;pic"
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
-    PackageArgs['distpath'] = r'G:\PythonAPP_Package\WW'
+    PackageArgs['distpath'] = r'G:\PythonAPP_Package\Stream_Sender'
 
     packaging()

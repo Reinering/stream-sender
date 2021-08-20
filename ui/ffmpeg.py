@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+Stream Sender
+author: niub
+email: niub@jzkjgroup.com
+"""
 
-"""
-Module implementing mainWindow.
-"""
+
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot
@@ -366,7 +369,7 @@ class FfmpegThread(QThread):
     def __init__(self, filePath, videoFormat, protocol, source_ip, multiCast_ip, port, parent=None):
         super(FfmpegThread, self).__init__(parent)
         self.filePath = filePath
-        self.videoFormat =videoFormat
+        self.videoFormat = videoFormat
         self.protocol = protocol
         self.source_ip = source_ip
         self.multiCast_ip = multiCast_ip

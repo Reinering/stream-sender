@@ -16,7 +16,8 @@ from PyQt5.QtWidgets import QApplication
 
 import manage
 # from ui.ffmpeg import MainWindow
-from ui.Push_Video_Stream import MainWindow
+# from ui.Push_Video_Stream import MainWindow
+from ui.MainWindow import MainWindow
 
 # from pycrunch_trace.client.api import trace
 

@@ -12,13 +12,13 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import QThread
 from PyQt5 import QtGui
-
-from .Ui_Push_Video_Stream import Ui_MainWindow
 import socket
 import re
 import subprocess
 import time
 import ffmpy3
+
+from .Ui_Push_Video_Stream import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -376,7 +376,7 @@ class FfmpegThread(QThread):
     def __init__(self, filePath, videoFormat, protocol, source_ip, multiCast_ip, port, parent=None):
         super(FfmpegThread, self).__init__(parent)
         self.filePath = filePath
-        self.videoFormat =videoFormat
+        self.videoFormat = videoFormat
         self.protocol = protocol
         self.source_ip = source_ip
         self.multiCast_ip = multiCast_ip

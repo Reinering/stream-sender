@@ -4,16 +4,16 @@
 Module implementing MainWindow.
 """
 
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QCoreApplication, Qt
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QCoreApplication, Qt, QThread
 from PyQt5.QtWidgets import QMainWindow, QHeaderView, QMenu, QMessageBox, QTableWidgetItem, QFileDialog
 from PyQt5.QtGui import QFont
 import datetime
 import decimal
 import simplejson
-import re
 import subprocess
-import time
 import ffmpy3
+import asyncio
+import sys
 import logging
 
 from manage import TASKLIST_CONFIG
@@ -39,7 +39,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.videoFormat = ".ts"
         self.taskkey = 0
         self.tasklist = []
-        self.threadList = []
 
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -98,12 +97,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.addDialog = addTask()
                 self.addDialog.setAttribute(Qt.WA_DeleteOnClose, True)
                 self.addDialog.setModal(True)
-                self.addDialog.modifyInfo(row, tableWidget)
+                self.addDialog.modifyInfo(row, self.tasklist[row], tableWidget)
                 self.addDialog.show()
             elif action_menu.text() == "删除":
                 button = QMessageBox.information(self, "提示", "确认删除此任务？", QMessageBox.Yes | QMessageBox.No)
                 if button == QMessageBox.Yes:
                     key = self.tasklist[row]
+                    print("mark")
+                    if TASKLIST_CONFIG[key].__contains__("thread"):
+                        TASKLIST_CONFIG[key].__contains__("thread").stop()
+
                     self.tasklist.remove(key)
                     TASKLIST_CONFIG.pop(key)
                     tableWidget.removeRow(row)
@@ -126,14 +129,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def addTask(self, p0):
         key = "task_" + str(self.taskkey)
         TASKLIST_CONFIG[key] = p0
+        TASKLIST_CONFIG[key]["current_index"] = 0
         self.tasklist.append(key)
         self.taskkey += 1
         self.addInfo(self.tableWidget, p0["playlist"][0].split('/')[-1], p0["send_mode"], p0["protocol"],
-                     p0["src_ip"], p0["dst_ipaddr"], p0["dst_port"], '', '')
+                     p0["src_ip"], p0["dst_ip"], p0["dst_port"], p0["out_video_format"], '', '')
 
     def clearConfig(self):
         self.taskkey = 0
         self.tasklist.clear()
+        for key, value in TASKLIST_CONFIG.items():
+            if value.__contains__("thread"):
+                value.__contains__("thread").stop()
         TASKLIST_CONFIG.clear()
 
     @pyqtSlot()
@@ -158,16 +165,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
-        pass
+        row = self.tableWidget.currentRow()
+        print("row", row)
 
-    @pyqtSlot()
-    def on_pushButton_stop_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        # TODO: not implemented yet
-        # raise NotImplementedError
-        pass
+        if row >= 0:
+            config = TASKLIST_CONFIG[self.tasklist[row]]
+            if not config.__contains__("thread"):
+                config["thread"] = FfmpegThread(row, config)
+                config["thread"].signal_state.connect(self.setTaskState)
+            config["thread"].start()
+        elif row == -1:
+            i = 0
+            for key in self.tasklist:
+                config = TASKLIST_CONFIG[key]
+                if not config.__contains__("thread"):
+                    config["thread"] = FfmpegThread(i, config)
+                    config["thread"].signal_state.connect(self.setTaskState)
+                config["thread"].start()
+                i += 1
+
+    def setTaskState(self, p0):
+        print(p0)
+        config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
+        if isinstance(p0[1], bool):
+            config["state"] = p0[1]
+            item = self.tableWidget.item(p0[0], 8)
+            if p0[1]:
+                item.setText(self.translate("MainWindow", "是"))
+            else:
+                item.setText(self.translate("MainWindow", "否"))
+                # item.setFont(self.setCellFont())
+        elif isinstance(p0[1], str):
+            item = self.tableWidget.item(p0[0], 0)
+            item.setText(self.translate("MainWindow", p0[1]))
+            config["current_index"] += 1
 
     @pyqtSlot()
     def on_pushButton_open_clicked(self):
@@ -202,9 +233,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for key, value in config.items():
             try:
                 self.addInfo(self.tableWidget, value["playlist"][0].split('/')[-1], value["send_mode"], value["protocol"],
-                             value["src_ip"], value["dst_ipaddr"], value["dst_port"], '', '')
+                             value["src_ip"], value["dst_ip"], value["dst_port"], value["out_video_format"], '', '')
                 key = "task_" + str(self.taskkey)
                 TASKLIST_CONFIG[key] = value
+                TASKLIST_CONFIG[key]["current_index"] = 0
                 self.tasklist.append(key)
                 self.taskkey += 1
             except Exception as e:
@@ -222,6 +254,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
         if not filePath:
             return
+        for key, value in TASKLIST_CONFIG.items():
+            value["thread"] = None
         configJson = simplejson.dumps(TASKLIST_CONFIG)
         with open(filePath[0], 'w', encoding="utf-8") as f:
             f.write(configJson)
@@ -243,3 +277,161 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # raise NotImplementedError
         pos = self.cursor().pos()
         self.createLeftMenu(row, self.tableWidget, pos)
+
+    @pyqtSlot()
+    def on_pushButton_stop_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        try:
+            row = self.tableWidget.currentRow()
+            if row >= 0:
+                config = TASKLIST_CONFIG[self.tasklist[row]]
+                if config.__contains__("thread") and config["thread"].isRunning():
+                    config["thread"].stop()
+            elif row == -1:
+                for key in self.tasklist:
+                    config = TASKLIST_CONFIG[key]
+                    if config.__contains__("thread") and config["thread"].isRunning():
+                        config["thread"].stop()
+        except Exception as e:
+            print(e)
+
+    @pyqtSlot()
+    def on_pushButton_pause_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        try:
+            row = self.tableWidget.currentRow()
+            if row >= 0:
+                config = TASKLIST_CONFIG[self.tasklist[row]]
+                if config.__contains__("thread") and config["thread"].isRunning():
+                    config["thread"].pause()
+            elif row == -1:
+                for key in self.tasklist:
+                    config = TASKLIST_CONFIG[key]
+                    if config.__contains__("thread") and config["thread"].isRunning():
+                        config["thread"].pause()
+        except Exception as e:
+            print(e)
+    
+    @pyqtSlot()
+    def on_pushButton_next_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        try:
+            row = self.tableWidget.currentRow()
+            if row >= 0:
+                config = TASKLIST_CONFIG[self.tasklist[row]]
+                if config.__contains__("thread") and config["thread"].isRunning():
+                    config["thread"].next()
+        except Exception as e:
+            print(e)
+
+
+class FfmpegThread(QThread):
+
+    signal_state = pyqtSignal(tuple)
+
+    def __init__(self, row, CONFIG, parent=None):
+        super(FfmpegThread, self).__init__(parent)
+        self.row = row
+        self.config = CONFIG
+        self.stopBool = False
+
+    # ffmpeg -re -stream_loop -1 -i E:\BaiduYunDownload\zuiyufa.mp4  -vcodec libx264 -acodec copy -f mpegts udp://238.1.238.1:50001
+    # ffmpeg -re -stream_loop -1 -i C:\Users\Reiner\Desktop\SNC智取威虎山_截取.ts -vcodec copy -f mpegts udp://238.1.238.1:50001
+
+    def stop(self):
+        self.stopBool = True
+        try:
+            self.killFF()
+        except Exception as e:
+            print(e)
+        # self.signal_state.emit((self.row, False))
+
+    def next(self):
+        self.killFF()
+
+    def pause(self):
+        self.stop()
+
+    def killFF(self):
+        try:
+            pid = self.ff.process.pid
+            print("pid", pid)
+            cmd = "taskkill /pid " + str(pid) + " -t -f"
+            pp = subprocess.Popen(args=cmd,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  shell=True)
+            out = str(pp.stdout.read(), encoding="utf-8")
+            print('out:', out)
+        except Exception as e:
+            print(e)
+
+    def run(self):
+        self.stopBool = False
+        self.signal_state.emit((self.row, True))
+
+        if self.config["send_mode"] == "循环":
+            loopType = True
+        elif self.config["send_mode"] == "单次":
+            loopType = False
+
+        self.send()
+        while not self.stopBool and loopType:
+            self.send()
+        self.signal_state.emit((self.row, False))
+
+    def send(self):
+        files = self.config["playlist"]
+        for file in files:
+            if self.stopBool:
+                return
+            self.signal_state.emit((self.row, file))
+            if self.config["protocol"] == "UDP":
+                if self.config["out_video_format"] == "MPEG4":
+                    self.ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re'},
+                        outputs={'udp://' + self.config["dst_ip"] + ':' + str(self.config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+                    )
+                elif self.config["out_video_format"] == "TS":
+                    self.ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re'},
+                        outputs={'udp://' + self.config["dst_ip"] + ':' + str(self.config["dst_port"]): '-vcodec copy -f mpegts'}
+                    )
+            elif self.protocol == "RTP":
+                return
+            elif self.protocol == "RTMP":
+                return
+            else:
+                print("协议匹配错误")
+                return
+
+            print(self.ff.cmd)
+            try:
+                self.ff.run()
+            except Exception as e:
+                logging.critical(e)
+
+            # await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
+            # line_buf = bytearray()
+            # while True:
+            #     in_buf = (await my_stderr.read(128)).replace(b'\r', b'\n')
+            #     if not in_buf:
+            #         break
+            #     line_buf.extend(in_buf)
+            #     while b'\n' in line_buf:
+            #         line, _, line_buf = line_buf.partition(b'\n')
+            #         print(str(line), file=sys.stderr)
+            # await self.ff.wait()

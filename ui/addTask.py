@@ -14,6 +14,7 @@ import decimal
 import time
 import logging
 
+from manage import TASKLIST_CONFIG
 from .Ui_addTask import Ui_addTask
 
 
@@ -37,15 +38,34 @@ class addTask(QDialog, Ui_addTask):
         self.videoFormat = ".ts"
         self.taskInfo = {"playlist": []}
         self.on_pushButton_refresh_clicked()
+        self.action = "new"
 
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableWidget.setColumnWidth(0, 500)
         self.tableWidget.setColumnWidth(1, 150)
 
-    def modifyInfo(self, row, tableWidget):
-        print(row, tableWidget)
+    def modifyInfo(self, row, key, tableWidget):
+        self.action = "modify"
+        self.row = row
+        self.key = key
+        self.tableWidget_task = tableWidget
         self.setWindowTitle("修改任务")
-        
+        self.comboBox_ip.setCurrentText(TASKLIST_CONFIG[key]["bingAddr"])
+        self.comboBox_sendMode.setCurrentText(TASKLIST_CONFIG[key]["send_mode"])
+        self.comboBox_protocol.setCurrentText(TASKLIST_CONFIG[key]["protocol"])
+        self.comboBox_dst_ip.setCurrentText(TASKLIST_CONFIG[key]["dst_ip"])
+        self.spinBox_port.setValue(int(TASKLIST_CONFIG[key]["dst_port"]))
+        self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
+        for file in TASKLIST_CONFIG[key]["playlist"]:
+            self.addInfo(self.tableWidget, file, file.split('.')[-1])
+            self.taskInfo["playlist"].append(file)
+        if TASKLIST_CONFIG[key].__contains__("state") and TASKLIST_CONFIG[key]["state"]:
+            self.comboBox_ip.setEnabled(False)
+            self.pushButton_refresh.setEnabled(False)
+            self.comboBox_protocol.setEnabled(False)
+            self.comboBox_dst_ip.setEnabled(False)
+            self.spinBox_port.value(False)
+            self.comboBox_videoFormat.setEnabled(False)
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):
@@ -149,7 +169,11 @@ class addTask(QDialog, Ui_addTask):
         print("点击选择文件")
         try:
             files = QFileDialog.getOpenFileNames(self, u"选择视频文件", "/",
-                                                           "vedio Files(*" + self.videoFormat + ")")
+                                                           "vedio Files(*.ts);;"
+                                                           "vedio Files(*.mp4);;"
+                                                           "vedio Files(*.avi);;"
+                                                           "vedio Files(*.mkv);;"
+                                                           "all Files(*.*)")
             for file in files[0]:
                 self.addInfo(self.tableWidget, file, files[1])
                 self.taskInfo["playlist"].append(file)
@@ -232,8 +256,8 @@ class addTask(QDialog, Ui_addTask):
         if not protocol:
             return
 
-        multiIp = self.lineEdit_multiIp.text()
-        if not multiIp:
+        dst_ip = self.comboBox_dst_ip.currentText()
+        if not dst_ip:
             QMessageBox.critical(self, "错误", "组播地址不能为空")
             return
 
@@ -252,18 +276,79 @@ class addTask(QDialog, Ui_addTask):
 
         src_ip = self.comboBox_ip.currentText()
 
-        self.taskInfo["bingAddr"] = src_ip
-        self.taskInfo["protocol"] = protocol
-        self.taskInfo["dst_ipaddr"] = multiIp
-        self.taskInfo["dst_port"] = port
-        self.taskInfo["video_format"] = videoFormat
-        self.taskInfo["src_ip"] = src_ip
-        self.taskInfo["send_mode"] = sendMode
+        if self.action == "new":
+            self.taskInfo["protocol"] = protocol
+            self.taskInfo["dst_ip"] = dst_ip
+            self.taskInfo["dst_port"] = port
+            self.taskInfo["src_ip"] = src_ip
+            self.taskInfo["send_mode"] = sendMode
+            self.taskInfo["out_video_format"] = videoFormat
 
-        self.send_data.emit(self.taskInfo)
+            self.send_data.emit(self.taskInfo)
+        elif self.action == "modify":
+            TASKLIST_CONFIG[self.key]["protocol"] = protocol
+            TASKLIST_CONFIG[self.key]["dst_ip"] = dst_ip
+            TASKLIST_CONFIG[self.key]["dst_port"] = port
+            TASKLIST_CONFIG[self.key]["src_ip"] = src_ip
+            TASKLIST_CONFIG[self.key]["send_mode"] = sendMode
+            TASKLIST_CONFIG[self.key]["out_video_format"] = videoFormat
+            TASKLIST_CONFIG[self.key]["playlist"] = self.taskInfo["playlist"]
+            TASKLIST_CONFIG[self.key]["out_video_format"] = videoFormat
+
+            if not TASKLIST_CONFIG[self.key].__contains__("state") or TASKLIST_CONFIG[self.key]["state"]:
+                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][0])
+            self.tableWidget_task.item(self.row, 1).setText(TASKLIST_CONFIG[self.key]["send_mode"])
+            self.tableWidget_task.item(self.row, 2).setText(TASKLIST_CONFIG[self.key]["protocol"])
+            self.tableWidget_task.item(self.row, 3).setText(TASKLIST_CONFIG[self.key]["src_ip"])
+            self.tableWidget_task.item(self.row, 4).setText(TASKLIST_CONFIG[self.key]["dst_ip"])
+            self.tableWidget_task.item(self.row, 5).setText(str(TASKLIST_CONFIG[self.key]["dst_port"]))
+            self.tableWidget_task.item(self.row, 6).setText(TASKLIST_CONFIG[self.key]["out_video_format"])
+
         time.sleep(2)
         self.close()
-
+    
+    @pyqtSlot(str)
+    def on_comboBox_dst_ip_currentTextChanged(self, p0):
+        """
+        Slot documentation goes here.
+        
+        @param p0 DESCRIPTION
+        @type str
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        if p0 == "238.1.238.1":
+            self.spinBox_port.setValue(50001)
+        elif p0 == "238.1.238.2":
+            self.spinBox_port.setValue(50002)
+        elif p0 == "238.1.238.3":
+            self.spinBox_port.setValue(50003)
+        elif p0 == "238.1.238.4":
+            self.spinBox_port.setValue(50004)
+        elif p0 == "238.1.238.5":
+            self.spinBox_port.setValue(50005)
+        elif p0 == "238.1.238.6":
+            self.spinBox_port.setValue(50006)
+        elif p0 == "238.1.238.7":
+            self.spinBox_port.setValue(50007)
+        elif p0 == "238.1.238.8":
+            self.spinBox_port.setValue(50008)
+        elif p0 == "238.1.238.9":
+            self.spinBox_port.setValue(50009)
+        elif p0 == "238.1.238.10":
+            self.spinBox_port.setValue(50010)
+        elif p0 == "238.1.238.11":
+            self.spinBox_port.setValue(50011)
+        elif p0 == "238.1.238.12":
+            self.spinBox_port.setValue(50012)
+        elif p0 == "238.1.238.51":
+            self.spinBox_port.setValue(5051)
+        elif p0 == "238.1.238.52":
+            self.spinBox_port.setValue(5052)
+        elif p0 == "238.1.238.53":
+            self.spinBox_port.setValue(5053)
+        elif p0 == "238.1.238.54":
+            self.spinBox_port.setValue(5054)
 
 
 

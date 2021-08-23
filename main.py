@@ -79,8 +79,8 @@ def main(argv=None):
         except getopt.error as msg:
             raise Usage(msg)
     except Usage as err:
-        print >>sys.stderr, err.msg
-        print >>sys.stderr, "for help use --help"
+        print >> sys.stderr, err.msg
+        print >> sys.stderr, "for help use --help"
         return 2
 
 

@@ -8,8 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.0.01"
-RUNTIMEENV = None
+VERSION = "v0.0.01"RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -28,15 +27,15 @@ For Example
 TASKLIST_CONFIG = {
     "1": {
         "playlist": [],
-        "bingAddr": '',
         "protocol": '',
-        "dst_ipaddr": '',
+        "dst_ip": '',
         "dst_port": '',
         “src_ip": '',
         "send_mode": '',
-        "video_format"'": '',
+        "out_video_format"'": '',
         "state": True,
-        "current_index" 0
+        "current_index" 0,
+        "thread": None
     }
 }
 """

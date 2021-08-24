@@ -173,6 +173,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if not config.__contains__("thread"):
                 config["thread"] = FfmpegThread(row, config)
                 config["thread"].signal_state.connect(self.setTaskState)
+            elif config["thread"].isRunning():
+                return
             config["thread"].start()
         elif row == -1:
             i = 0
@@ -181,7 +183,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if not config.__contains__("thread"):
                     config["thread"] = FfmpegThread(i, config)
                     config["thread"].signal_state.connect(self.setTaskState)
-                config["thread"].start()
+                if not config["thread"].isRunning():
+                    config["thread"].start()
                 i += 1
 
     def setTaskState(self, p0):
@@ -418,20 +421,7 @@ class FfmpegThread(QThread):
                 print("协议匹配错误")
                 return
 
-            print(self.ff.cmd)
             try:
                 self.ff.run()
             except Exception as e:
                 logging.critical(e)
-
-            # await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
-            # line_buf = bytearray()
-            # while True:
-            #     in_buf = (await my_stderr.read(128)).replace(b'\r', b'\n')
-            #     if not in_buf:
-            #         break
-            #     line_buf.extend(in_buf)
-            #     while b'\n' in line_buf:
-            #         line, _, line_buf = line_buf.partition(b'\n')
-            #         print(str(line), file=sys.stderr)
-            # await self.ff.wait()

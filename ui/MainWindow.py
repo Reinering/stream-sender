@@ -6,7 +6,7 @@ Module implementing MainWindow.
 
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QCoreApplication, Qt, QThread
 from PyQt5.QtWidgets import QMainWindow, QHeaderView, QMenu, QMessageBox, QTableWidgetItem, QFileDialog
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QCloseEvent
 import datetime
 import decimal
 import simplejson
@@ -40,8 +40,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.taskkey = 0
         self.tasklist = []
 
+        self.ffTh = FfmpegCorThread()
+        self.ffTh.start()
+
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.ffTh.stop()
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):
@@ -103,7 +109,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 button = QMessageBox.information(self, "提示", "确认删除此任务？", QMessageBox.Yes | QMessageBox.No)
                 if button == QMessageBox.Yes:
                     key = self.tasklist[row]
-                    print("mark")
                     if TASKLIST_CONFIG[key].__contains__("thread"):
                         TASKLIST_CONFIG[key].__contains__("thread").stop()
 
@@ -158,6 +163,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearConfig()
         self.clearTableWidgetEntry(self.tableWidget)
 
+    # @pyqtSlot()
+    # def on_pushButton_start_clicked(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     # TODO: not implemented yet
+    #     # raise NotImplementedError
+    #     row = self.tableWidget.currentRow()
+    #     print("row", row)
+    #
+    #     if row >= 0:
+    #         config = TASKLIST_CONFIG[self.tasklist[row]]
+    #         if not config.__contains__("thread"):
+    #             config["thread"] = FfmpegThread(row, config)
+    #             config["thread"].signal_state.connect(self.setTaskState)
+    #         elif config["thread"].isRunning():
+    #             return
+    #         config["thread"].start()
+    #     elif row == -1:
+    #         i = 0
+    #         for key in self.tasklist:
+    #             config = TASKLIST_CONFIG[key]
+    #             if not config.__contains__("thread"):
+    #                 config["thread"] = FfmpegThread(i, config)
+    #                 config["thread"].signal_state.connect(self.setTaskState)
+    #             if not config["thread"].isRunning():
+    #                 config["thread"].start()
+    #             i += 1
+
     @pyqtSlot()
     def on_pushButton_start_clicked(self):
         """
@@ -167,21 +201,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # raise NotImplementedError
         row = self.tableWidget.currentRow()
         print("row", row)
-
         if row >= 0:
             config = TASKLIST_CONFIG[self.tasklist[row]]
-            if not config.__contains__("thread"):
-                config["thread"] = FfmpegThread(row, config)
-                config["thread"].signal_state.connect(self.setTaskState)
-            config["thread"].start()
+            self.ffTh.addGevent(row, config)
         elif row == -1:
             i = 0
             for key in self.tasklist:
                 config = TASKLIST_CONFIG[key]
-                if not config.__contains__("thread"):
-                    config["thread"] = FfmpegThread(i, config)
-                    config["thread"].signal_state.connect(self.setTaskState)
-                config["thread"].start()
+                self.ffTh.addGevent(i, config)
                 i += 1
 
     def setTaskState(self, p0):
@@ -410,9 +437,9 @@ class FfmpegThread(QThread):
                         inputs={file: '-re'},
                         outputs={'udp://' + self.config["dst_ip"] + ':' + str(self.config["dst_port"]): '-vcodec copy -f mpegts'}
                     )
-            elif self.protocol == "RTP":
+            elif self.config["protocol"] == "RTP":
                 return
-            elif self.protocol == "RTMP":
+            elif self.config["protocol"] == "RTMP":
                 return
             else:
                 print("协议匹配错误")
@@ -424,7 +451,105 @@ class FfmpegThread(QThread):
             except Exception as e:
                 logging.critical(e)
 
-            # await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
+
+# Coroutine
+class FfmpegCorThread(QThread):
+
+    signal_state = pyqtSignal(tuple)
+
+    def __init__(self, parent=None):
+        super(FfmpegCorThread, self).__init__(parent)
+        self.stopBool = False
+        self.loop = asyncio.new_event_loop()
+        self.processList = {}
+
+    def stop(self):
+        print("结束线程")
+        self.stopBool = True
+        try:
+            self.loop.stop()
+            self.loop.close()
+        except Exception as e:
+            print(e)
+
+    def next(self, row):
+        self.killFF()
+
+    def pause(self, row):
+        # self.loop.
+        try:
+            self.processList[row].kill()
+        except Exception as e:
+            print(e)
+
+    def killFF(self):
+        try:
+            pid = self.ff.process.pid
+            print("pid", pid)
+            cmd = "taskkill /pid " + str(pid) + " -t -f"
+            pp = subprocess.Popen(args=cmd,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  shell=True)
+            out = str(pp.stdout.read(), encoding="utf-8")
+            print('out:', out)
+        except Exception as e:
+            print(e)
+
+    def run(self):
+        try:
+            asyncio.set_event_loop(self.loop)
+            self.loop.run_forever()
+        except Exception as e:
+            print(e)
+        finally:
+            self.loop.close()
+
+    def addGevent(self, row, CONFIG):
+        self.row = row
+        self.config = CONFIG
+        asyncio.run_coroutine_threadsafe(self.send(row, CONFIG), self.loop)
+
+    def run1(self):
+        self.stopBool = False
+        self.signal_state.emit((self.row, True))
+
+        if self.config["send_mode"] == "循环":
+            loopType = True
+        elif self.config["send_mode"] == "单次":
+            loopType = False
+
+        self.send()
+        while not self.stopBool and loopType:
+            self.send()
+        self.signal_state.emit((self.row, False))
+
+    async def send(self, row, config):
+        files = config["playlist"]
+        for file in files:
+            self.signal_state.emit((row, file))
+            if config["protocol"] == "UDP":
+                if config["out_video_format"] == "MPEG4":
+                    ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re'},
+                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+                    )
+                elif config["out_video_format"] == "TS":
+                    ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re'},
+                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
+                    )
+            elif config["protocol"] == "RTP":
+                return
+            elif config["protocol"] == "RTMP":
+                return
+            else:
+                print("协议匹配错误")
+                return
+
+            process = await ff.run_async()
+            self.processList[row] = process
             # line_buf = bytearray()
             # while True:
             #     in_buf = (await my_stderr.read(128)).replace(b'\r', b'\n')
@@ -434,4 +559,5 @@ class FfmpegThread(QThread):
             #     while b'\n' in line_buf:
             #         line, _, line_buf = line_buf.partition(b'\n')
             #         print(str(line), file=sys.stderr)
-            # await self.ff.wait()
+            await ff.wait()
+            print("mark")

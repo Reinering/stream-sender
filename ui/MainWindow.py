@@ -41,6 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tasklist = []
 
         self.ffTh = FfmpegCorThread()
+        self.ffTh.signal_state.connect(self.setTaskState)
         self.ffTh.start()
 
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -163,35 +164,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearConfig()
         self.clearTableWidgetEntry(self.tableWidget)
 
-    # @pyqtSlot()
-    # def on_pushButton_start_clicked(self):
-    #     """
-    #     Slot documentation goes here.
-    #     """
-    #     # TODO: not implemented yet
-    #     # raise NotImplementedError
-    #     row = self.tableWidget.currentRow()
-    #     print("row", row)
-    #
-    #     if row >= 0:
-    #         config = TASKLIST_CONFIG[self.tasklist[row]]
-    #         if not config.__contains__("thread"):
-    #             config["thread"] = FfmpegThread(row, config)
-    #             config["thread"].signal_state.connect(self.setTaskState)
-    #         elif config["thread"].isRunning():
-    #             return
-    #         config["thread"].start()
-    #     elif row == -1:
-    #         i = 0
-    #         for key in self.tasklist:
-    #             config = TASKLIST_CONFIG[key]
-    #             if not config.__contains__("thread"):
-    #                 config["thread"] = FfmpegThread(i, config)
-    #                 config["thread"].signal_state.connect(self.setTaskState)
-    #             if not config["thread"].isRunning():
-    #                 config["thread"].start()
-    #             i += 1
-
     @pyqtSlot()
     def on_pushButton_start_clicked(self):
         """
@@ -203,29 +175,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("row", row)
         if row >= 0:
             config = TASKLIST_CONFIG[self.tasklist[row]]
-            self.ffTh.addGevent(row, config)
+            self.ffTh.addCoroutine(row, config)
         elif row == -1:
             i = 0
             for key in self.tasklist:
                 config = TASKLIST_CONFIG[key]
-                self.ffTh.addGevent(i, config)
+                self.ffTh.addCoroutine(i, config)
                 i += 1
 
     def setTaskState(self, p0):
         print(p0)
         config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
-        if isinstance(p0[1], bool):
+        if isinstance(p0[1], int):
             config["state"] = p0[1]
             item = self.tableWidget.item(p0[0], 8)
-            if p0[1]:
+            if p0[1] == 1:
                 item.setText(self.translate("MainWindow", "是"))
-            else:
+            elif p0[1] == 0:
                 item.setText(self.translate("MainWindow", "否"))
-                # item.setFont(self.setCellFont())
+                config["current_index"] = 0
+            elif p0[1] == 2:
+                item.setText(self.translate("MainWindow", "暂停"))
+
         elif isinstance(p0[1], str):
             item = self.tableWidget.item(p0[0], 0)
             item.setText(self.translate("MainWindow", p0[1]))
-            config["current_index"] += 1
 
     @pyqtSlot()
     def on_pushButton_open_clicked(self):
@@ -315,14 +289,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             row = self.tableWidget.currentRow()
             if row >= 0:
-                config = TASKLIST_CONFIG[self.tasklist[row]]
-                if config.__contains__("thread") and config["thread"].isRunning():
-                    config["thread"].stop()
+                self.ffTh.stopCoroutine(row)
             elif row == -1:
-                for key in self.tasklist:
-                    config = TASKLIST_CONFIG[key]
-                    if config.__contains__("thread") and config["thread"].isRunning():
-                        config["thread"].stop()
+                for i in range(len(self.tasklist)):
+                    self.ffTh.stopCoroutine(i)
         except Exception as e:
             print(e)
 
@@ -336,14 +306,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             row = self.tableWidget.currentRow()
             if row >= 0:
-                config = TASKLIST_CONFIG[self.tasklist[row]]
-                if config.__contains__("thread") and config["thread"].isRunning():
-                    config["thread"].pause()
+                self.ffTh.pause(row)
             elif row == -1:
-                for key in self.tasklist:
-                    config = TASKLIST_CONFIG[key]
-                    if config.__contains__("thread") and config["thread"].isRunning():
-                        config["thread"].pause()
+                for i in range(len(self.tasklist)):
+                    self.ffTh.pause(i)
         except Exception as e:
             print(e)
     
@@ -358,99 +324,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             row = self.tableWidget.currentRow()
             if row >= 0:
                 config = TASKLIST_CONFIG[self.tasklist[row]]
-                if config.__contains__("thread") and config["thread"].isRunning():
-                    config["thread"].next()
+                self.ffTh.pause(row)
+                config["current_index"] += 1
+                self.ffTh.addCoroutine(row, config)
         except Exception as e:
             print(e)
-
-
-class FfmpegThread(QThread):
-
-    signal_state = pyqtSignal(tuple)
-
-    def __init__(self, row, CONFIG, parent=None):
-        super(FfmpegThread, self).__init__(parent)
-        self.row = row
-        self.config = CONFIG
-        self.stopBool = False
-
-    # ffmpeg -re -stream_loop -1 -i E:\BaiduYunDownload\zuiyufa.mp4  -vcodec libx264 -acodec copy -f mpegts udp://238.1.238.1:50001
-    # ffmpeg -re -stream_loop -1 -i C:\Users\Reiner\Desktop\SNC智取威虎山_截取.ts -vcodec copy -f mpegts udp://238.1.238.1:50001
-
-    def stop(self):
-        self.stopBool = True
-        try:
-            self.killFF()
-        except Exception as e:
-            print(e)
-        # self.signal_state.emit((self.row, False))
-
-    def next(self):
-        self.killFF()
-
-    def pause(self):
-        self.stop()
-
-    def killFF(self):
-        try:
-            pid = self.ff.process.pid
-            print("pid", pid)
-            cmd = "taskkill /pid " + str(pid) + " -t -f"
-            pp = subprocess.Popen(args=cmd,
-                                  stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  shell=True)
-            out = str(pp.stdout.read(), encoding="utf-8")
-            print('out:', out)
-        except Exception as e:
-            print(e)
-
-    def run(self):
-        self.stopBool = False
-        self.signal_state.emit((self.row, True))
-
-        if self.config["send_mode"] == "循环":
-            loopType = True
-        elif self.config["send_mode"] == "单次":
-            loopType = False
-
-        self.send()
-        while not self.stopBool and loopType:
-            self.send()
-        self.signal_state.emit((self.row, False))
-
-    def send(self):
-        files = self.config["playlist"]
-        for file in files:
-            if self.stopBool:
-                return
-            self.signal_state.emit((self.row, file))
-            if self.config["protocol"] == "UDP":
-                if self.config["out_video_format"] == "MPEG4":
-                    self.ff = ffmpy3.FFmpeg(
-                        inputs={file: '-re'},
-                        outputs={'udp://' + self.config["dst_ip"] + ':' + str(self.config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-                    )
-                elif self.config["out_video_format"] == "TS":
-                    self.ff = ffmpy3.FFmpeg(
-                        inputs={file: '-re'},
-                        outputs={'udp://' + self.config["dst_ip"] + ':' + str(self.config["dst_port"]): '-vcodec copy -f mpegts'}
-                    )
-            elif self.config["protocol"] == "RTP":
-                return
-            elif self.config["protocol"] == "RTMP":
-                return
-            else:
-                print("协议匹配错误")
-                return
-
-            print(self.ff.cmd)
-            try:
-                self.ff.run()
-            except Exception as e:
-                logging.critical(e)
-
 
 # Coroutine
 class FfmpegCorThread(QThread):
@@ -464,27 +342,32 @@ class FfmpegCorThread(QThread):
         self.processList = {}
 
     def stop(self):
-        print("结束线程")
+        print("结束线程", self.loop.is_running())
         self.stopBool = True
         try:
+            for key, value in self.processList.items():
+                self.stopCoroutine(key)
+            self.processList.clear()
             self.loop.stop()
-            self.loop.close()
+            print(self.loop.is_running())
         except Exception as e:
             print(e)
 
-    def next(self, row):
-        self.killFF()
+    def stopCoroutine(self, row):
+        print("结束协程", row)
+        try:
+            self.killFF(self.processList[row])
+        except Exception as e:
+            print(e)
+        self.signal_state.emit((row, 0))
 
     def pause(self, row):
-        # self.loop.
-        try:
-            self.processList[row].kill()
-        except Exception as e:
-            print(e)
+        self.stopCoroutine(row)
+        self.signal_state.emit((row, 2))
 
-    def killFF(self):
+    def killFF(self, ff):
         try:
-            pid = self.ff.process.pid
+            pid = ff.process.pid
             print("pid", pid)
             cmd = "taskkill /pid " + str(pid) + " -t -f"
             pp = subprocess.Popen(args=cmd,
@@ -506,58 +389,55 @@ class FfmpegCorThread(QThread):
         finally:
             self.loop.close()
 
-    def addGevent(self, row, CONFIG):
+    def addCoroutine(self, row, CONFIG):
         self.row = row
         self.config = CONFIG
-        asyncio.run_coroutine_threadsafe(self.send(row, CONFIG), self.loop)
+        asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
 
-    def run1(self):
-        self.stopBool = False
-        self.signal_state.emit((self.row, True))
+    async def sendCoroutine(self, row, config):
+        self.signal_state.emit((row, 1))
+        loopType = True
 
-        if self.config["send_mode"] == "循环":
-            loopType = True
-        elif self.config["send_mode"] == "单次":
-            loopType = False
+        while loopType:
+            if config["send_mode"] == "单次":
+                loopType = False
 
-        self.send()
-        while not self.stopBool and loopType:
-            self.send()
-        self.signal_state.emit((self.row, False))
+            i = config["current_index"]
+            while i < len(config["playlist"]):
+                self.signal_state.emit((row, config["playlist"][i]))
+                ff = self.send(config)
+                await ff.run_async()
+                self.processList[row] = ff
+                await ff.wait()
+                i += 1
+                config["current_index"] = i
 
-    async def send(self, row, config):
-        files = config["playlist"]
-        for file in files:
-            self.signal_state.emit((row, file))
-            if config["protocol"] == "UDP":
-                if config["out_video_format"] == "MPEG4":
-                    ff = ffmpy3.FFmpeg(
-                        inputs={file: '-re'},
-                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-                    )
-                elif config["out_video_format"] == "TS":
+            config["current_index"] = 0
+
+        self.signal_state.emit((self.row, 0))
+
+    def send(self, config):
+        file = config["playlist"][config["current_index"]]
+        if config["protocol"] == "UDP":
+            if config["out_video_format"] == "MPEG4":
+                ff = ffmpy3.FFmpeg(
+                    inputs={config: '-re'},
+                    outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+                )
+            elif config["out_video_format"] == "TS":
+                if file.split('.')[-1].upper() == "TS":
                     ff = ffmpy3.FFmpeg(
                         inputs={file: '-re'},
                         outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
                     )
-            elif config["protocol"] == "RTP":
-                return
-            elif config["protocol"] == "RTMP":
-                return
-            else:
-                print("协议匹配错误")
-                return
+                elif file.split('.')[-1].upper() == "MKV":
+                    pass
+        elif config["protocol"] == "RTP":
+            return
+        elif config["protocol"] == "RTMP":
+            return
+        else:
+            print("协议匹配错误")
+            return
 
-            process = await ff.run_async()
-            self.processList[row] = process
-            # line_buf = bytearray()
-            # while True:
-            #     in_buf = (await my_stderr.read(128)).replace(b'\r', b'\n')
-            #     if not in_buf:
-            #         break
-            #     line_buf.extend(in_buf)
-            #     while b'\n' in line_buf:
-            #         line, _, line_buf = line_buf.partition(b'\n')
-            #         print(str(line), file=sys.stderr)
-            await ff.wait()
-            print("mark")
+        return ff

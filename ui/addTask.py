@@ -4,9 +4,9 @@
 Module implementing tkDialog.
 """
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QDialog, QHeaderView, QTableWidgetItem, QMenu, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QMenu, QMessageBox, QFileDialog, QToolTip
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QCursor
 import socket
 import re
 import datetime
@@ -48,6 +48,17 @@ class addTask(QDialog, Ui_addTask):
         self.tableWidget.setColumnWidth(0, 300)
         self.tableWidget.setColumnWidth(1, 180)
         self.tableWidget.setColumnWidth(2, 180)
+        # tooltip
+        self.tableWidget.setMouseTracking(True)
+        self.tableWidget.cellEntered.connect(self.cellEntered)
+
+    def cellEntered(self, row, column):
+        try:
+            content = self.tableWidget.item(row, column).text()
+        except Exception as e:
+            return
+        if content:
+            QToolTip.showText(QCursor.pos(), content)
 
     def modifyInfo(self, row, key, tableWidget):
         self.action = "modify"

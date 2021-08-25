@@ -5,8 +5,8 @@ Module implementing MainWindow.
 """
 
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QCoreApplication, Qt, QThread
-from PyQt5.QtWidgets import QMainWindow, QHeaderView, QMenu, QMessageBox, QTableWidgetItem, QFileDialog
-from PyQt5.QtGui import QFont, QCloseEvent
+from PyQt5.QtWidgets import QMainWindow, QHeaderView, QMenu, QMessageBox, QTableWidgetItem, QFileDialog, QToolTip
+from PyQt5.QtGui import QFont, QCloseEvent, QCursor
 import datetime
 import decimal
 import simplejson
@@ -47,6 +47,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        # tooltip
+        self.tableWidget.setMouseTracking(True)
+        self.tableWidget.cellEntered.connect(self.cellEntered)
+
+    def cellEntered(self, row, column):
+        if column == 0:
+            try:
+                content = self.tableWidget.item(row, column).text()
+            except Exception as e:
+                return 
+            if content:
+                QToolTip.showText(QCursor.pos(), content)
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()

@@ -419,7 +419,8 @@ class FfmpegCorThread(QThread):
                         print(line, file=sys.stderr)
                         if 'Conversion failed!' in line \
                             or "Protocol not found" in line \
-                            or "Filtering and streamcopy cannot be used together." in line:
+                            or "Filtering and streamcopy cannot be used together." in line \
+                            or "Invalid argument" in line:
 
                             loopBool = True
                             break
@@ -460,39 +461,24 @@ class FfmpegCorThread(QThread):
             if subtitle.split('.')[-1].upper() == "SRT":
                 # outParams += ' -vf subtitles={}'.format(subtitle)
                 inputs[subtitle] = None
+
         # video_format
         if file.split('.')[-1].upper() == "TS":
-            outParams += ' -vcodec'
+            outParams += ' -vcodec copy -acodec copy'
+        else:
+            outParams += ' -vcodec copy -acodec copy'
 
         # out_video_format
         if config["out_video_format"] == "MPEG4":
-            pass
+            outParams += ' -f mpeg4'
         elif config["out_video_format"] == "TS":
-            outParams += ' copy -f mpegts'
-
-        # if config["protocol"] == "UDP":
-        #     if config["out_video_format"] == "MPEG4":
-        #         ff = ffmpy3.FFmpeg(
-        #             inputs={file: '-re'},
-        #             outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-        #         )
-        #     elif config["out_video_format"] == "TS":
-        #         if file.split('.')[-1].upper() == "TS":
-        #             ff = ffmpy3.FFmpeg(
-        #                 inputs={file: '-re'},
-        #                 outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
-        #             )
-        #         else:
-        #             ff = ffmpy3.FFmpeg(
-        #                 inputs={file: '-re'},
-        #                 # outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-        #                 outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-c:v libx264 -b:v 10M -pass 2 -acodec copy -f mpegts'}
-        #             )
+            outParams += ' -f mpegts'
 
         outputs[outurl] = outParams
 
         ff = ffmpy3.FFmpeg(inputs=inputs,
                            outputs=outputs
                            )
+        print("cmd: ", ff.cmd, '\n')
         return ff
 

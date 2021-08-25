@@ -12,11 +12,14 @@ import re
 import datetime
 import decimal
 import time
+import ffmpy3
+import subprocess
 import logging
 
 from manage import TASKLIST_CONFIG
 from .Ui_addTask import Ui_addTask
 from .videoSetting import SettingDialog
+from .showVideoInfo import ShowInfoDialog
 
 
 class addTask(QDialog, Ui_addTask):
@@ -68,7 +71,7 @@ class addTask(QDialog, Ui_addTask):
             self.pushButton_refresh.setEnabled(False)
             self.comboBox_protocol.setEnabled(False)
             self.comboBox_dst_ip.setEnabled(False)
-            self.spinBox_port.value(False)
+            self.spinBox_port.setEnabled(False)
             self.comboBox_videoFormat.setEnabled(False)
             self.comboBox_uri.setEnabled(False)
 
@@ -115,6 +118,8 @@ class addTask(QDialog, Ui_addTask):
         del_item = _menu.addAction("删除")
         del_item.setFont(font)
         # del_item.triggered.connect(self.deluser)
+        check_item = _menu.addAction("查看信息")
+        check_item.setFont(font)
         setting_item = _menu.addAction("设置")
         setting_item.setFont(font)
         action_menu = _menu.exec_(pos)
@@ -136,6 +141,8 @@ class addTask(QDialog, Ui_addTask):
                 if button == QMessageBox.Yes:
                     self.taskInfo["playlist"].pop(row)
                     tableWidget.removeRow(row)
+            elif action_menu.text() == "查看信息":
+                self.checkVideo(self.taskInfo["playlist"][row]["videoFile"])
             else:
                 pass
 
@@ -172,6 +179,16 @@ class addTask(QDialog, Ui_addTask):
     #         else:
     #             return
     #         self.userDialog.show()
+
+    def checkVideo(self, file):
+        ff = ffmpy3.FFprobe(inputs={file: None},
+                            global_options="-v quiet -print_format json -show_format -show_streams")
+        stdout = ff.run(stdout=subprocess.PIPE)
+        self.showInfoDialog = ShowInfoDialog()
+        self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.showInfoDialog.setModal(True)
+        self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
+        self.showInfoDialog.show()
 
     def updateTableWidget(self, p0):
         if isinstance(p0, tuple):

@@ -459,7 +459,18 @@
         </column>
         <column>
          <property name="text">
-          <string>属性</string>
+          <string>字幕文件</string>
+         </property>
+         <property name="font">
+          <font>
+           <family>微软雅黑</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>参数</string>
          </property>
          <property name="font">
           <font>

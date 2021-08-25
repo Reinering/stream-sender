@@ -137,7 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         TASKLIST_CONFIG[key]["current_index"] = 0
         self.tasklist.append(key)
         self.taskkey += 1
-        self.addInfo(self.tableWidget, p0["playlist"][0].split('/')[-1], p0["send_mode"], p0["protocol"],
+        self.addInfo(self.tableWidget, p0["playlist"][0]["videoFile"].split('/')[-1], p0["send_mode"], p0["protocol"],
                      p0["src_ip"], p0["dst_ip"], p0["dst_port"], p0["out_video_format"], '', '')
 
     def clearConfig(self):
@@ -232,7 +232,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for key, value in config.items():
             try:
-                self.addInfo(self.tableWidget, value["playlist"][0].split('/')[-1], value["send_mode"], value["protocol"],
+                self.addInfo(self.tableWidget, value["playlist"][0]["videoFile"].split('/')[-1], value["send_mode"], value["protocol"],
                              value["src_ip"], value["dst_ip"], value["dst_port"], value["out_video_format"], '', '')
                 key = "task_" + str(self.taskkey)
                 TASKLIST_CONFIG[key] = value
@@ -255,7 +255,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not filePath:
             return
         for key, value in TASKLIST_CONFIG.items():
-            value["thread"] = None
+            value.pop("thread")
         configJson = simplejson.dumps(TASKLIST_CONFIG)
         with open(filePath[0], 'w', encoding="utf-8") as f:
             f.write(configJson)
@@ -405,7 +405,7 @@ class FfmpegCorThread(QThread):
             i = config["current_index"]
             loopBool = False
             while i < len(config["playlist"]):
-                self.signal_state.emit((row, config["playlist"][i]))
+                self.signal_state.emit((row, config["playlist"][i]["videoFile"]))
                 ff = self.send(config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row] = ff
@@ -440,7 +440,7 @@ class FfmpegCorThread(QThread):
         self.signal_state.emit((self.row, 0))
 
     def send(self, config):
-        file = config["playlist"][config["current_index"]]
+        file = config["playlist"][config["current_index"]]["videoFile"]
         if config["protocol"] == "UDP":
             if config["out_video_format"] == "MPEG4":
                 ff = ffmpy3.FFmpeg(

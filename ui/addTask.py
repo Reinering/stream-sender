@@ -4,7 +4,7 @@
 Module implementing tkDialog.
 """
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QDialog, QHeaderView, QTableWidgetItem, QMenu, QMessageBox ,QFileDialog
+from PyQt5.QtWidgets import QDialog, QHeaderView, QTableWidgetItem, QMenu, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QFont
 import socket
@@ -16,6 +16,7 @@ import logging
 
 from manage import TASKLIST_CONFIG
 from .Ui_addTask import Ui_addTask
+from .videoSetting import SettingDialog
 
 
 class addTask(QDialog, Ui_addTask):
@@ -41,8 +42,9 @@ class addTask(QDialog, Ui_addTask):
         self.action = "new"
 
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tableWidget.setColumnWidth(0, 500)
-        self.tableWidget.setColumnWidth(1, 150)
+        self.tableWidget.setColumnWidth(0, 300)
+        self.tableWidget.setColumnWidth(1, 180)
+        self.tableWidget.setColumnWidth(2, 180)
 
     def modifyInfo(self, row, key, tableWidget):
         self.action = "modify"
@@ -57,7 +59,8 @@ class addTask(QDialog, Ui_addTask):
         self.spinBox_port.setValue(int(TASKLIST_CONFIG[key]["dst_port"]))
         self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
         for file in TASKLIST_CONFIG[key]["playlist"]:
-            self.addInfo(self.tableWidget, file, file.split('.')[-1])
+            self.addInfo(self.tableWidget, file["videoFile"],
+                         file["subtitleFile"] if file.__contains__("subtitleFile") else '')
             self.taskInfo["playlist"].append(file)
         if TASKLIST_CONFIG[key].__contains__("state") and TASKLIST_CONFIG[key]["state"]:
             self.comboBox_ip.setEnabled(False)
@@ -110,6 +113,8 @@ class addTask(QDialog, Ui_addTask):
         del_item = _menu.addAction("删除")
         del_item.setFont(font)
         # del_item.triggered.connect(self.deluser)
+        setting_item = _menu.addAction("设置")
+        setting_item.setFont(font)
         action_menu = _menu.exec_(pos)
         if not action_menu:
             return
@@ -117,12 +122,17 @@ class addTask(QDialog, Ui_addTask):
         if action_menu.text() == "选择":
             self.redirectPage(True, tableWidget, row)
         else:
-            if action_menu.text() == "修改":
-                pass
+            if action_menu.text() == "设置":
+                self.settingDialog = SettingDialog()
+                self.settingDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+                self.settingDialog.setModal(True)
+                self.settingDialog.setParams(row, self.taskInfo["playlist"][row])
+                self.settingDialog.signal_setting.connect(self.updateTableWidget)
+                self.settingDialog.show()
             elif action_menu.text() == "删除":
                 button = QMessageBox.information(self, "提示", "确认删除？", QMessageBox.Yes | QMessageBox.No)
                 if button == QMessageBox.Yes:
-                    self.taskInfo["playlist"].remove(tableWidget.item(row, 0).text())
+                    self.taskInfo["playlist"].pop(row)
                     tableWidget.removeRow(row)
             else:
                 pass
@@ -161,6 +171,10 @@ class addTask(QDialog, Ui_addTask):
     #             return
     #         self.userDialog.show()
 
+    def updateTableWidget(self, p0):
+        if isinstance(p0, tuple):
+            self.tableWidget.item(p0[0], 1).setText(self.taskInfo["playlist"][p0[0]]["subtitleFile"])
+
     @pyqtSlot()
     def on_pushButton_openPath_clicked(self):
         """
@@ -173,10 +187,11 @@ class addTask(QDialog, Ui_addTask):
                                                            "vedio Files(*.mp4);;"
                                                            "vedio Files(*.avi);;"
                                                            "vedio Files(*.mkv);;"
+                                                           "vedio Files(*.flv);;"
                                                            "all Files(*.*)")
             for file in files[0]:
-                self.addInfo(self.tableWidget, file, files[1])
-                self.taskInfo["playlist"].append(file)
+                self.addInfo(self.tableWidget, file, '', '')
+                self.taskInfo["playlist"].append({"videoFile": file})
         except Exception as e:
             print(e)
 
@@ -296,7 +311,7 @@ class addTask(QDialog, Ui_addTask):
             TASKLIST_CONFIG[self.key]["out_video_format"] = videoFormat
 
             if not TASKLIST_CONFIG[self.key].__contains__("state") or TASKLIST_CONFIG[self.key]["state"]:
-                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][0])
+                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"])
             self.tableWidget_task.item(self.row, 1).setText(TASKLIST_CONFIG[self.key]["send_mode"])
             self.tableWidget_task.item(self.row, 2).setText(TASKLIST_CONFIG[self.key]["protocol"])
             self.tableWidget_task.item(self.row, 3).setText(TASKLIST_CONFIG[self.key]["src_ip"])

@@ -14,6 +14,7 @@ import subprocess
 import ffmpy3
 import asyncio
 import sys
+import re
 import logging
 
 from manage import TASKLIST_CONFIG
@@ -110,9 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 button = QMessageBox.information(self, "提示", "确认删除此任务？", QMessageBox.Yes | QMessageBox.No)
                 if button == QMessageBox.Yes:
                     key = self.tasklist[row]
-                    if TASKLIST_CONFIG[key].__contains__("thread"):
-                        TASKLIST_CONFIG[key].__contains__("thread").stop()
-
+                    self.ffTh.stop(row)
                     self.tasklist.remove(key)
                     TASKLIST_CONFIG.pop(key)
                     tableWidget.removeRow(row)
@@ -144,9 +143,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clearConfig(self):
         self.taskkey = 0
         self.tasklist.clear()
-        for key, value in TASKLIST_CONFIG.items():
-            if value.__contains__("thread"):
-                value.__contains__("thread").stop()
+
         TASKLIST_CONFIG.clear()
 
     @pyqtSlot()
@@ -196,10 +193,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 config["current_index"] = 0
             elif p0[1] == 2:
                 item.setText(self.translate("MainWindow", "暂停"))
-
         elif isinstance(p0[1], str):
             item = self.tableWidget.item(p0[0], 0)
             item.setText(self.translate("MainWindow", p0[1]))
+        elif isinstance(p0[1], tuple):
+            item = self.tableWidget.item(p0[0], 7)
+            item.setText(self.translate("MainWindow", p0[1][5]))
 
     @pyqtSlot()
     def on_pushButton_open_clicked(self):
@@ -340,6 +339,7 @@ class FfmpegCorThread(QThread):
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
         self.processList = {}
+        self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
 
     def stop(self):
         print("结束线程", self.loop.is_running())
@@ -403,16 +403,39 @@ class FfmpegCorThread(QThread):
                 loopType = False
 
             i = config["current_index"]
+            loopBool = False
             while i < len(config["playlist"]):
                 self.signal_state.emit((row, config["playlist"][i]))
                 ff = self.send(config)
-                await ff.run_async()
+                await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row] = ff
-                await ff.wait()
+                line_buf = bytearray()
+                while True:
+                    in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
+                    if not in_buf:
+                        break
+                    line_buf.extend(in_buf)
+                    while b'\n' in line_buf:
+                        line, _, line_buf = line_buf.partition(b'\n')
+                        line = str(line)
+                        # print(line, file=sys.stderr)
+                        if 'Conversion failed!' in line:
+                            loopBool = True
+                            break
+                        else:
+                            result = re.findall(self.resultRE, line)
+                            if result:
+                                self.signal_state.emit((row, result[0]))
+
+                if not loopBool:
+                    await ff.wait()
+
                 i += 1
                 config["current_index"] = i
 
             config["current_index"] = 0
+            if loopBool:
+                loopType = False
 
         self.signal_state.emit((self.row, 0))
 
@@ -421,7 +444,7 @@ class FfmpegCorThread(QThread):
         if config["protocol"] == "UDP":
             if config["out_video_format"] == "MPEG4":
                 ff = ffmpy3.FFmpeg(
-                    inputs={config: '-re'},
+                    inputs={file: '-re'},
                     outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
                 )
             elif config["out_video_format"] == "TS":
@@ -430,8 +453,12 @@ class FfmpegCorThread(QThread):
                         inputs={file: '-re'},
                         outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
                     )
-                elif file.split('.')[-1].upper() == "MKV":
-                    pass
+                else:
+                    ff = ffmpy3.FFmpeg(
+                        inputs={file: '-re'},
+                        # outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-c:v libx264 -b:v 10M -pass 2 -acodec copy -f mpegts'}
+                    )
         elif config["protocol"] == "RTP":
             return
         elif config["protocol"] == "RTMP":

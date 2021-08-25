@@ -50,7 +50,7 @@ class addTask(QDialog, Ui_addTask):
         self.key = key
         self.tableWidget_task = tableWidget
         self.setWindowTitle("修改任务")
-        self.comboBox_ip.setCurrentText(TASKLIST_CONFIG[key]["bingAddr"])
+        self.comboBox_ip.setCurrentText(TASKLIST_CONFIG[key]["src_ip"])
         self.comboBox_sendMode.setCurrentText(TASKLIST_CONFIG[key]["send_mode"])
         self.comboBox_protocol.setCurrentText(TASKLIST_CONFIG[key]["protocol"])
         self.comboBox_dst_ip.setCurrentText(TASKLIST_CONFIG[key]["dst_ip"])

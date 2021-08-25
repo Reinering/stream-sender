@@ -111,7 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 button = QMessageBox.information(self, "提示", "确认删除此任务？", QMessageBox.Yes | QMessageBox.No)
                 if button == QMessageBox.Yes:
                     key = self.tasklist[row]
-                    self.ffTh.stop(row)
+                    self.ffTh.stopCoroutine(row)
                     self.tasklist.remove(key)
                     TASKLIST_CONFIG.pop(key)
                     tableWidget.removeRow(row)
@@ -254,8 +254,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
         if not filePath:
             return
-        for key, value in TASKLIST_CONFIG.items():
-            value.pop("thread")
         configJson = simplejson.dumps(TASKLIST_CONFIG)
         with open(filePath[0], 'w', encoding="utf-8") as f:
             f.write(configJson)
@@ -418,8 +416,11 @@ class FfmpegCorThread(QThread):
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
                         line = str(line)
-                        # print(line, file=sys.stderr)
-                        if 'Conversion failed!' in line:
+                        print(line, file=sys.stderr)
+                        if 'Conversion failed!' in line \
+                            or "Protocol not found" in line \
+                            or "Filtering and streamcopy cannot be used together." in line:
+
                             loopBool = True
                             break
                         else:
@@ -441,31 +442,57 @@ class FfmpegCorThread(QThread):
 
     def send(self, config):
         file = config["playlist"][config["current_index"]]["videoFile"]
-        if config["protocol"] == "UDP":
-            if config["out_video_format"] == "MPEG4":
-                ff = ffmpy3.FFmpeg(
-                    inputs={file: '-re'},
-                    outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-                )
-            elif config["out_video_format"] == "TS":
-                if file.split('.')[-1].upper() == "TS":
-                    ff = ffmpy3.FFmpeg(
-                        inputs={file: '-re'},
-                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
-                    )
-                else:
-                    ff = ffmpy3.FFmpeg(
-                        inputs={file: '-re'},
-                        # outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
-                        outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-c:v libx264 -b:v 10M -pass 2 -acodec copy -f mpegts'}
-                    )
-        elif config["protocol"] == "RTP":
-            return
-        elif config["protocol"] == "RTMP":
-            return
-        else:
-            print("协议匹配错误")
+        inputs = {file: '-re'}
+        outputs = {}
+        outParams = ''
+        if config["protocol"] != "UDP" and config["protocol"] != "RTP" and config["protocol"] != "RTMP":
+            logging.critical("协议匹配错误")
             return
 
+        outurl = '{}://{}:{}{}'.format(config["protocol"].lower(),
+                                       config["dst_ip"],
+                                       str(config["dst_port"]),
+                                       config["uri"])
+
+        # subtitle
+        if config["playlist"][config["current_index"]].__contains__("subtitleFile") and config["playlist"][config["current_index"]]["subtitleFile"]:
+            subtitle = config["playlist"][config["current_index"]]["subtitleFile"]
+            if subtitle.split('.')[-1].upper() == "SRT":
+                # outParams += ' -vf subtitles={}'.format(subtitle)
+                inputs[subtitle] = None
+        # video_format
+        if file.split('.')[-1].upper() == "TS":
+            outParams += ' -vcodec'
+
+        # out_video_format
+        if config["out_video_format"] == "MPEG4":
+            pass
+        elif config["out_video_format"] == "TS":
+            outParams += ' copy -f mpegts'
+
+        # if config["protocol"] == "UDP":
+        #     if config["out_video_format"] == "MPEG4":
+        #         ff = ffmpy3.FFmpeg(
+        #             inputs={file: '-re'},
+        #             outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+        #         )
+        #     elif config["out_video_format"] == "TS":
+        #         if file.split('.')[-1].upper() == "TS":
+        #             ff = ffmpy3.FFmpeg(
+        #                 inputs={file: '-re'},
+        #                 outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec copy -f mpegts'}
+        #             )
+        #         else:
+        #             ff = ffmpy3.FFmpeg(
+        #                 inputs={file: '-re'},
+        #                 # outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-vcodec libx264 -acodec copy -f mpegts'}
+        #                 outputs={'udp://' + config["dst_ip"] + ':' + str(config["dst_port"]): '-c:v libx264 -b:v 10M -pass 2 -acodec copy -f mpegts'}
+        #             )
+
+        outputs[outurl] = outParams
+
+        ff = ffmpy3.FFmpeg(inputs=inputs,
+                           outputs=outputs
+                           )
         return ff
 

@@ -58,6 +58,7 @@ class addTask(QDialog, Ui_addTask):
         self.comboBox_dst_ip.setCurrentText(TASKLIST_CONFIG[key]["dst_ip"])
         self.spinBox_port.setValue(int(TASKLIST_CONFIG[key]["dst_port"]))
         self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
+        self.comboBox_uri.setCurrentText(TASKLIST_CONFIG[key]["uri"])
         for file in TASKLIST_CONFIG[key]["playlist"]:
             self.addInfo(self.tableWidget, file["videoFile"],
                          file["subtitleFile"] if file.__contains__("subtitleFile") else '')
@@ -69,6 +70,7 @@ class addTask(QDialog, Ui_addTask):
             self.comboBox_dst_ip.setEnabled(False)
             self.spinBox_port.value(False)
             self.comboBox_videoFormat.setEnabled(False)
+            self.comboBox_uri.setEnabled(False)
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):
@@ -290,6 +292,7 @@ class addTask(QDialog, Ui_addTask):
             return
 
         src_ip = self.comboBox_ip.currentText()
+        uri = self.comboBox_uri.currentText()
 
         if self.action == "new":
             self.taskInfo["protocol"] = protocol
@@ -298,6 +301,7 @@ class addTask(QDialog, Ui_addTask):
             self.taskInfo["src_ip"] = src_ip
             self.taskInfo["send_mode"] = sendMode
             self.taskInfo["out_video_format"] = videoFormat
+            self.taskInfo["uri"] = uri
 
             self.send_data.emit(self.taskInfo)
         elif self.action == "modify":
@@ -309,6 +313,7 @@ class addTask(QDialog, Ui_addTask):
             TASKLIST_CONFIG[self.key]["out_video_format"] = videoFormat
             TASKLIST_CONFIG[self.key]["playlist"] = self.taskInfo["playlist"]
             TASKLIST_CONFIG[self.key]["out_video_format"] = videoFormat
+            TASKLIST_CONFIG[self.key]["uri"] = uri
 
             if not TASKLIST_CONFIG[self.key].__contains__("state") or TASKLIST_CONFIG[self.key]["state"]:
                 self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"])

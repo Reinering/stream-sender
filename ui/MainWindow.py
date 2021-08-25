@@ -191,6 +191,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif p0[1] == 0:
                 item.setText(self.translate("MainWindow", "否"))
                 config["current_index"] = 0
+                item = self.tableWidget.item(p0[0], 7)
+                item.setText(self.translate("MainWindow", ''))
             elif p0[1] == 2:
                 item.setText(self.translate("MainWindow", "暂停"))
         elif isinstance(p0[1], str):

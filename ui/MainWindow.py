@@ -37,6 +37,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.translate = QCoreApplication.translate
 
+        self.ffmpegPath = ''
+
         self.videoFormat = ".ts"
         self.taskkey = 0
         self.tasklist = []
@@ -56,9 +58,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 content = self.tableWidget.item(row, column).text()
             except Exception as e:
-                return 
+                return
             if content:
                 QToolTip.showText(QCursor.pos(), content)
+
+    @pyqtSlot()
+    def on_action_exePath_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        print("path")
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
@@ -338,6 +349,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ffTh.addCoroutine(row, config)
         except Exception as e:
             print(e)
+    
+
 
 # Coroutine
 class FfmpegCorThread(QThread):
@@ -423,7 +436,9 @@ class FfmpegCorThread(QThread):
                 while True:
                     in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
                     if not in_buf:
+                        print("mark")
                         break
+                    print("mark")
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')

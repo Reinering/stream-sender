@@ -192,14 +192,17 @@ class addTask(QDialog, Ui_addTask):
     #         self.userDialog.show()
 
     def checkVideo(self, file):
-        ff = ffmpy3.FFprobe(inputs={file: None},
-                            global_options="-v quiet -print_format json -show_format -show_streams")
-        stdout = ff.run(stdout=subprocess.PIPE)
-        self.showInfoDialog = ShowInfoDialog()
-        self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
-        self.showInfoDialog.setModal(True)
-        self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
-        self.showInfoDialog.show()
+        try:
+            ff = ffmpy3.FFprobe(inputs={file: None},
+                                global_options="-v quiet -print_format json -show_format -show_streams")
+            stdout = ff.run(stdout=subprocess.PIPE)
+            self.showInfoDialog = ShowInfoDialog()
+            self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+            self.showInfoDialog.setModal(True)
+            self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
+            self.showInfoDialog.show()
+        except ffmpy3.FFExecutableNotFoundError as e:
+            QMessageBox.critical(self, "错误", "未找到ffprobe")
 
     def updateTableWidget(self, p0):
         if isinstance(p0, tuple):

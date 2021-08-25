@@ -161,8 +161,14 @@ class Ui_MainWindow(object):
         font.setFamily("微软雅黑")
         self.menu.setFont(font)
         self.menu.setObjectName("menu")
+        self.menu_2 = QtWidgets.QMenu(self.menuBar)
+        self.menu_2.setObjectName("menu_2")
         MainWindow.setMenuBar(self.menuBar)
+        self.action_exePath = QtWidgets.QAction(MainWindow)
+        self.action_exePath.setObjectName("action_exePath")
+        self.menu.addAction(self.action_exePath)
         self.menuBar.addAction(self.menu.menuAction())
+        self.menuBar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -197,7 +203,9 @@ class Ui_MainWindow(object):
         self.pushButton_stop.setText(_translate("MainWindow", "停止"))
         self.pushButton_open.setText(_translate("MainWindow", "打开配置"))
         self.pushButton_save.setText(_translate("MainWindow", "保存配置"))
-        self.menu.setTitle(_translate("MainWindow", "帮助"))
+        self.menu.setTitle(_translate("MainWindow", "设置"))
+        self.menu_2.setTitle(_translate("MainWindow", "帮助"))
+        self.action_exePath.setText(_translate("MainWindow", "FFmpeg"))
 
 
 if __name__ == "__main__":

@@ -40,9 +40,12 @@ class addTask(QDialog, Ui_addTask):
         self.setupUi(self)
         self.translate = QtCore.QCoreApplication.translate
         self.videoFormat = ".ts"
+        self.row = None
+        self.key = None
         self.taskInfo = {"playlist": []}
         self.on_pushButton_refresh_clicked()
         self.action = "new"
+        self.key
 
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableWidget.setColumnWidth(0, 300)
@@ -149,7 +152,7 @@ class addTask(QDialog, Ui_addTask):
         setting_item = _menu.addAction("设置")
         setting_item.setFont(font)
 
-        if TASKLIST_CONFIG[self.key].__contains__("state") and TASKLIST_CONFIG[self.key]["state"] == 1:
+        if self.key and TASKLIST_CONFIG[self.key].__contains__("state") and TASKLIST_CONFIG[self.key]["state"] == 1:
             del_item.setEnabled(False)
             setting_item.setEnabled(False)
 
@@ -349,6 +352,9 @@ class addTask(QDialog, Ui_addTask):
         if not dst_ip:
             QMessageBox.critical(self, "错误", "组播地址不能为空")
             return
+        if not re.match(r'^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$', dst_ip):
+            QMessageBox.critical(self, "错误", "IP地址格式错误，请重新输入")
+            return
 
         port = self.spinBox_port.value()
         if not port:
@@ -409,6 +415,7 @@ class addTask(QDialog, Ui_addTask):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
+
         if p0 == "238.1.238.1":
             self.spinBox_port.setValue(50001)
         elif p0 == "238.1.238.2":

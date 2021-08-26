@@ -17,7 +17,7 @@ import sys
 import re
 import logging
 
-from manage import TASKLIST_CONFIG
+from manage import TASKLIST_CONFIG, FFMPEG_ERRORS
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
 from .ffmpegHelp import FFmpegHelpDialog
@@ -391,10 +391,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(e)
     
 
-    
-
-    
-
+def checkOutputErr(p0):
+    for err in FFMPEG_ERRORS:
+        if err in p0:
+            return True
+    return False
 
 # Coroutine
 class FfmpegCorThread(QThread):
@@ -488,12 +489,8 @@ class FfmpegCorThread(QThread):
                         line, _, line_buf = line_buf.partition(b'\n')
                         line = str(line)
                         print(line, file=sys.stderr)
-                        if 'Conversion failed!' in line \
-                            or "Protocol not found" in line \
-                            or "Filtering and streamcopy cannot be used together." in line \
-                            or "Invalid argument" in line:
 
-                            loopBool = True
+                        if checkOutputErr:
                             break
                         else:
                             result = re.findall(self.resultRE, line)

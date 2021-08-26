@@ -268,6 +268,7 @@
      <string>帮助</string>
     </property>
     <addaction name="action_about"/>
+    <addaction name="action_ffmpeg_help"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -335,6 +336,17 @@
   <action name="action_about">
    <property name="text">
     <string>关于</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_ffmpeg_help">
+   <property name="text">
+    <string>命令参数
+</string>
    </property>
    <property name="font">
     <font>

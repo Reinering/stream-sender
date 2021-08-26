@@ -185,8 +185,14 @@ class Ui_MainWindow(object):
         font.setFamily("微软雅黑")
         self.action_about.setFont(font)
         self.action_about.setObjectName("action_about")
+        self.action_ffmpeg_help = QtWidgets.QAction(MainWindow)
+        font = QtGui.QFont()
+        font.setFamily("微软雅黑")
+        self.action_ffmpeg_help.setFont(font)
+        self.action_ffmpeg_help.setObjectName("action_ffmpeg_help")
         self.menu.addAction(self.action_exePath)
         self.menu_2.addAction(self.action_about)
+        self.menu_2.addAction(self.action_ffmpeg_help)
         self.menu_3.addAction(self.action_open)
         self.menu_3.addAction(self.action_save)
         self.menu_3.addAction(self.action_saveas)
@@ -235,6 +241,8 @@ class Ui_MainWindow(object):
         self.action_saveas.setText(_translate("MainWindow", "另存为配置"))
         self.action_exit.setText(_translate("MainWindow", "退出"))
         self.action_about.setText(_translate("MainWindow", "关于"))
+        self.action_ffmpeg_help.setText(_translate("MainWindow", "命令参数\n"
+""))
 
 
 if __name__ == "__main__":

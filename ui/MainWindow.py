@@ -20,6 +20,7 @@ import logging
 from manage import TASKLIST_CONFIG
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
+from .ffmpegHelp import FFmpegHelpDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -122,6 +123,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.configPath = filePath[0]
         QMessageBox.information(self, "提示", "文件已保存")
+
+    @pyqtSlot()
+    def on_action_ffmpeg_help_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.ffHelpDialog = FFmpegHelpDialog()
+        self.ffHelpDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.ffHelpDialog.setModal(False)
+        self.ffHelpDialog.show()
 
     @pyqtSlot()
     def on_action_exit_triggered(self):
@@ -376,6 +389,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ffTh.addCoroutine(row, config)
         except Exception as e:
             print(e)
+    
+
     
 
     

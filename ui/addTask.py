@@ -140,6 +140,11 @@ class addTask(QDialog, Ui_addTask):
         check_item.setFont(font)
         setting_item = _menu.addAction("设置")
         setting_item.setFont(font)
+
+        if TASKLIST_CONFIG[self.key].__contains__("state") and TASKLIST_CONFIG[self.key]["state"] == 1:
+            del_item.setEnabled(False)
+            setting_item.setEnabled(False)
+
         action_menu = _menu.exec_(pos)
         if not action_menu:
             return

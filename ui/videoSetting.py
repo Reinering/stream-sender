@@ -38,6 +38,12 @@ class SettingDialog(QDialog, Ui_Dialog):
     def initWidget(self):
         if self.config.__contains__("subtitleFile"):
             self.label_sub.setText(self.config["subtitleFile"])
+
+        if self.config.__contains__("inputs") and self.config["inputs"]:
+            self.plainTextEdit_params_in.setPlainText(self.config["inputs"])
+
+        if self.config.__contains__("outputs") and self.config["outputs"]:
+            self.plainTextEdit_params_out.setPlainText(self.config["outputs"])
     
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):
@@ -67,7 +73,15 @@ class SettingDialog(QDialog, Ui_Dialog):
         subFile = self.label_sub.text()
         if subFile:
             self.config["subtitleFile"] = subFile
-        print(self.row)
+
+        inputs = self.plainTextEdit_params_in.toPlainText()
+        if inputs:
+            self.config["inputs"] = inputs.replace('\n', ' ')
+
+        outputs = self.plainTextEdit_params_out.toPlainText()
+        if outputs:
+            self.config["outputs"] = outputs.replace('\n', ' ')
+
         self.signal_setting.emit((self.row,))
 
         time.sleep(2)

@@ -8,7 +8,8 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.0.01"RUNTIMEENV = None
+VERSION = "v0.0.01"
+RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -29,7 +30,9 @@ TASKLIST_CONFIG = {
         "playlist": [
             {
                 "videoFile": '',
-                "subtitleFile": ''
+                "subtitleFile": '',
+                "inputs": '',
+                "outputs": ''
             }
         ],
         "protocol": '',

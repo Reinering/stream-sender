@@ -170,19 +170,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_clear">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>清空任务</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="pushButton_start">
         <property name="font">
          <font>
@@ -235,7 +222,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_open">
+       <widget class="QPushButton" name="pushButton_clear">
         <property name="font">
          <font>
           <family>微软雅黑</family>
@@ -243,20 +230,7 @@
          </font>
         </property>
         <property name="text">
-         <string>打开配置</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_save">
-        <property name="font">
-         <font>
-          <family>微软雅黑</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>保存配置</string>
+         <string>清空任务</string>
         </property>
        </widget>
       </item>
@@ -285,16 +259,87 @@
     <addaction name="action_exePath"/>
    </widget>
    <widget class="QMenu" name="menu_2">
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+     </font>
+    </property>
     <property name="title">
      <string>帮助</string>
     </property>
+    <addaction name="action_about"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
+    <addaction name="action_saveas"/>
+    <addaction name="action_exit"/>
+   </widget>
+   <addaction name="menu_3"/>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
   </widget>
   <action name="action_exePath">
    <property name="text">
     <string>FFmpeg</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="text">
+    <string>打开配置</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_save">
+   <property name="text">
+    <string>保存配置</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_saveas">
+   <property name="text">
+    <string>另存为配置</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>关于</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
    </property>
   </action>
  </widget>

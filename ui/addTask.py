@@ -74,8 +74,15 @@ class addTask(QDialog, Ui_addTask):
         self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
         self.comboBox_uri.setCurrentText(TASKLIST_CONFIG[key]["uri"])
         for file in TASKLIST_CONFIG[key]["playlist"]:
+            params = ''
+            if file.__contains__("inputs") and file["inputs"]:
+                params = "inputs: " + file["inputs"] + ', '
+            if file.__contains__("outputs") and file["outputs"]:
+                params = params + "outputs: " + file["outputs"]
+
             self.addInfo(self.tableWidget, file["videoFile"],
-                         file["subtitleFile"] if file.__contains__("subtitleFile") else '')
+                         file["subtitleFile"] if file.__contains__("subtitleFile") else '', params)
+
             self.taskInfo["playlist"].append(file)
         if TASKLIST_CONFIG[key].__contains__("state") and TASKLIST_CONFIG[key]["state"]:
             self.comboBox_ip.setEnabled(False)
@@ -206,7 +213,19 @@ class addTask(QDialog, Ui_addTask):
 
     def updateTableWidget(self, p0):
         if isinstance(p0, tuple):
-            self.tableWidget.item(p0[0], 1).setText(self.taskInfo["playlist"][p0[0]]["subtitleFile"])
+            if self.taskInfo["playlist"][p0[0]].__contains__("subtitleFile") and self.taskInfo["playlist"][p0[0]]["subtitleFile"]:
+                self.tableWidget.item(p0[0], 1).setText(self.taskInfo["playlist"][p0[0]]["subtitleFile"])
+
+            params = ''
+            if self.taskInfo["playlist"][p0[0]].__contains__("inputs") \
+                and self.taskInfo["playlist"][p0[0]]["inputs"]:
+                params = "inputs: " + self.taskInfo["playlist"][p0[0]]["inputs"] + ', '
+            if self.taskInfo["playlist"][p0[0]].__contains__("outputs") \
+                    and self.taskInfo["playlist"][p0[0]]["outputs"]:
+
+                params = params + "outputs: " + self.taskInfo["playlist"][p0[0]]["outputs"]
+            if params:
+                self.tableWidget.item(p0[0], 2).setText(params)
 
     @pyqtSlot()
     def on_pushButton_openPath_clicked(self):
@@ -224,7 +243,7 @@ class addTask(QDialog, Ui_addTask):
                                                            "all Files(*.*)")
             for file in files[0]:
                 self.addInfo(self.tableWidget, file, '', '')
-                self.taskInfo["playlist"].append({"videoFile": file})
+                self.taskInfo["playlist"].append({"videoFile": file, "inputs": '-re', "outputs": '-vcodec copy -acodec copy'})
         except Exception as e:
             print(e)
 

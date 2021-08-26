@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.translate = QCoreApplication.translate
 
         self.ffmpegPath = ''
+        self.configPath = ''
 
         self.videoFormat = ".ts"
         self.taskkey = 0
@@ -70,6 +71,66 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # TODO: not implemented yet
         # raise NotImplementedError
         print("path")
+
+    @pyqtSlot()
+    def on_action_open_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        try:
+            filePath = QFileDialog.getOpenFileName(self, u"选择配置文件", "/",
+                                                   "json file(*.json)")
+            if not filePath[0]:
+                return
+
+            self.parseConfigFile(filePath[0])
+        except Exception as e:
+            print(e)
+
+    @pyqtSlot()
+    def on_action_save_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        if self.configPath:
+            configJson = simplejson.dumps(TASKLIST_CONFIG)
+            with open(self.configPath, 'w', encoding="utf-8") as f:
+                f.write(configJson)
+                f.flush()
+
+            QMessageBox.information(self, "提示", "文件已保存")
+        else:
+            self.on_action_saveas_triggered()
+
+    @pyqtSlot()
+    def on_action_saveas_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
+        if not filePath[0]:
+            return
+        configJson = simplejson.dumps(TASKLIST_CONFIG)
+        with open(filePath[0], 'w', encoding="utf-8") as f:
+            f.write(configJson)
+            f.flush()
+
+        self.configPath = filePath[0]
+        QMessageBox.information(self, "提示", "文件已保存")
+
+    @pyqtSlot()
+    def on_action_exit_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.close()
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
@@ -223,23 +284,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             item = self.tableWidget.item(p0[0], 7)
             item.setText(self.translate("MainWindow", p0[1][5]))
 
-    @pyqtSlot()
-    def on_pushButton_open_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        # TODO: not implemented yet
-        # raise NotImplementedError
-        try:
-            filePath = QFileDialog.getOpenFileName(self, u"选择配置文件", "/",
-                                                           "json file(*.json)")
-            if not filePath[0]:
-                return
-
-            self.parseConfigFile(filePath[0])
-        except Exception as e:
-            print(e)
-
     def parseConfigFile(self, file):
         try:
             with open(file, 'r', encoding="utf-8") as f:
@@ -265,24 +309,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except Exception as e:
                 print(e)
                 continue
-
-    @pyqtSlot()
-    def on_pushButton_save_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        # TODO: not implemented yet
-        # raise NotImplementedError
-
-        filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
-        if not filePath:
-            return
-        configJson = simplejson.dumps(TASKLIST_CONFIG)
-        with open(filePath[0], 'w', encoding="utf-8") as f:
-            f.write(configJson)
-            f.flush()
-
-        QMessageBox.information(self, "提示", "文件已保存")
+        self.configPath = file
 
     @pyqtSlot(int, int)
     def on_tableWidget_cellDoubleClicked(self, row, column):
@@ -349,6 +376,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.ffTh.addCoroutine(row, config)
         except Exception as e:
             print(e)
+    
+
     
 
 
@@ -469,8 +498,17 @@ class FfmpegCorThread(QThread):
         self.signal_state.emit((self.row, 0))
 
     def send(self, config):
+        inputs = {}
+        outputs = {}
+
         file = config["playlist"][config["current_index"]]["videoFile"]
-        inputs = {file: '-re'}
+
+        inParams = ''
+        # inputs
+        if config["playlist"][config["current_index"]].__contains__("inputs") \
+                and config["playlist"][config["current_index"]]["inputs"]:
+            inParams = inParams + ' ' + config["playlist"][config["current_index"]]["inputs"]
+
         outputs = {}
         outParams = ''
         if config["protocol"] != "UDP" and config["protocol"] != "RTP" and config["protocol"] != "RTMP":
@@ -483,17 +521,23 @@ class FfmpegCorThread(QThread):
                                        config["uri"])
 
         # subtitle
-        if config["playlist"][config["current_index"]].__contains__("subtitleFile") and config["playlist"][config["current_index"]]["subtitleFile"]:
+        if config["playlist"][config["current_index"]].__contains__("subtitleFile") \
+                and config["playlist"][config["current_index"]]["subtitleFile"]:
             subtitle = config["playlist"][config["current_index"]]["subtitleFile"]
             if subtitle.split('.')[-1].upper() == "SRT":
                 # outParams += ' -vf subtitles={}'.format(subtitle)
                 inputs[subtitle] = None
 
+        # outputs
+        if config["playlist"][config["current_index"]].__contains__("outputs") \
+                and config["playlist"][config["current_index"]]["outputs"]:
+            outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
+
         # video_format
-        if file.split('.')[-1].upper() == "TS":
-            outParams += ' -vcodec copy -acodec copy'
-        else:
-            outParams += ' -vcodec copy -acodec copy'
+        # if file.split('.')[-1].upper() == "TS":
+        #     outParams += ' -vcodec copy -acodec copy'
+        # else:
+        #     outParams += ' -vcodec copy -acodec copy'
 
         # out_video_format
         if config["out_video_format"] == "MPEG4":
@@ -501,11 +545,10 @@ class FfmpegCorThread(QThread):
         elif config["out_video_format"] == "TS":
             outParams += ' -f mpegts'
 
+        inputs[file] = inParams
         outputs[outurl] = outParams
 
-        ff = ffmpy3.FFmpeg(inputs=inputs,
-                           outputs=outputs
-                           )
+        ff = ffmpy3.FFmpeg(inputs=inputs, outputs=outputs)
         print("cmd: ", ff.cmd, '\n')
         return ff
 

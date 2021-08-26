@@ -76,9 +76,17 @@ class addTask(QDialog, Ui_addTask):
         for file in TASKLIST_CONFIG[key]["playlist"]:
             params = ''
             if file.__contains__("inputs") and file["inputs"]:
-                params = "inputs: " + file["inputs"] + ', '
+                params = "inputs: " + file["inputs"]
+
             if file.__contains__("outputs") and file["outputs"]:
+                if params:
+                    params += ', '
                 params = params + "outputs: " + file["outputs"]
+
+            if file.__contains__("globalputs") and file["globalputs"]:
+                if params:
+                    params += ', '
+                params = params + "globalputs: " + file["globalputs"]
 
             self.addInfo(self.tableWidget, file["videoFile"],
                          file["subtitleFile"] if file.__contains__("subtitleFile") else '', params)
@@ -224,11 +232,20 @@ class addTask(QDialog, Ui_addTask):
             params = ''
             if self.taskInfo["playlist"][p0[0]].__contains__("inputs") \
                 and self.taskInfo["playlist"][p0[0]]["inputs"]:
-                params = "inputs: " + self.taskInfo["playlist"][p0[0]]["inputs"] + ', '
+                params = "inputs: " + self.taskInfo["playlist"][p0[0]]["inputs"]
+
             if self.taskInfo["playlist"][p0[0]].__contains__("outputs") \
                     and self.taskInfo["playlist"][p0[0]]["outputs"]:
-
+                if params:
+                    params += ', '
                 params = params + "outputs: " + self.taskInfo["playlist"][p0[0]]["outputs"]
+
+            if self.taskInfo["playlist"][p0[0]].__contains__("globalputs") \
+                    and self.taskInfo["playlist"][p0[0]]["globalputs"]:
+                if params:
+                    params += ', '
+                params = params + "globalputs: " + self.taskInfo["playlist"][p0[0]]["globalputs"]
+
             if params:
                 self.tableWidget.item(p0[0], 2).setText(params)
 

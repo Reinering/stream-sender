@@ -44,6 +44,9 @@ class SettingDialog(QDialog, Ui_Dialog):
 
         if self.config.__contains__("outputs") and self.config["outputs"]:
             self.plainTextEdit_params_out.setPlainText(self.config["outputs"])
+
+        if self.config.__contains__("globalputs") and self.config["globalputs"]:
+            self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
     
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):
@@ -81,6 +84,10 @@ class SettingDialog(QDialog, Ui_Dialog):
         outputs = self.plainTextEdit_params_out.toPlainText()
         if outputs:
             self.config["outputs"] = outputs.replace('\n', ' ')
+
+        globalputs = self.plainTextEdit_params_global.toPlainText()
+        if outputs:
+            self.config["globalputs"] = globalputs.replace('\n', ' ')
 
         self.signal_setting.emit((self.row,))
 

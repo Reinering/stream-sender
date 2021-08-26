@@ -515,6 +515,7 @@ class FfmpegCorThread(QThread):
     def send(self, config):
         inputs = {}
         outputs = {}
+        globalputs = None
 
         file = config["playlist"][config["current_index"]]["videoFile"]
 
@@ -560,10 +561,19 @@ class FfmpegCorThread(QThread):
         elif config["out_video_format"] == "TS":
             outParams += ' -f mpegts'
 
+        # globalputs
+        if config["playlist"][config["current_index"]].__contains__("globalputs") \
+                and config["playlist"][config["current_index"]]["globalputs"]:
+            globalputs.append(config["playlist"][config["current_index"]]["globalputs"])
+        else:
+            globalputs = None
+
         inputs[file] = inParams
         outputs[outurl] = outParams
 
-        ff = ffmpy3.FFmpeg(inputs=inputs, outputs=outputs)
+        ff = ffmpy3.FFmpeg(inputs=inputs,
+                           outputs=outputs,
+                           global_options=globalputs)
         print("cmd: ", ff.cmd, '\n')
         return ff
 

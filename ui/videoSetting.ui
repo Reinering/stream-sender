@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>482</width>
-    <height>317</height>
+    <height>396</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -147,6 +147,25 @@
           </item>
           <item>
            <widget class="QPlainTextEdit" name="plainTextEdit_params_out"/>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>全局参数:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPlainTextEdit" name="plainTextEdit_params_global"/>
           </item>
          </layout>
         </item>

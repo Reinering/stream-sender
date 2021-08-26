@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(482, 317)
+        Dialog.resize(482, 396)
         Dialog.setMaximumSize(QtCore.QSize(500, 400))
         font = QtGui.QFont()
         font.setFamily("微软雅黑")
@@ -85,6 +85,18 @@ class Ui_Dialog(object):
         self.plainTextEdit_params_out.setObjectName("plainTextEdit_params_out")
         self.horizontalLayout_4.addWidget(self.plainTextEdit_params_out)
         self.gridLayout_2.addLayout(self.horizontalLayout_4, 1, 0, 1, 1)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_4 = QtWidgets.QLabel(self.groupBox_2)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_4.setFont(font)
+        self.label_4.setObjectName("label_4")
+        self.horizontalLayout_5.addWidget(self.label_4)
+        self.plainTextEdit_params_global = QtWidgets.QPlainTextEdit(self.groupBox_2)
+        self.plainTextEdit_params_global.setObjectName("plainTextEdit_params_global")
+        self.horizontalLayout_5.addWidget(self.plainTextEdit_params_global)
+        self.gridLayout_2.addLayout(self.horizontalLayout_5, 2, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_2)
         spacerItem1 = QtWidgets.QSpacerItem(138, 38, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
@@ -111,6 +123,7 @@ class Ui_Dialog(object):
         self.groupBox_2.setTitle(_translate("Dialog", "视频设置"))
         self.label_3.setText(_translate("Dialog", "输入参数:"))
         self.label_2.setText(_translate("Dialog", "输出参数:"))
+        self.label_4.setText(_translate("Dialog", "全局参数:"))
         self.pushButton_ok.setText(_translate("Dialog", "OK"))
 
 

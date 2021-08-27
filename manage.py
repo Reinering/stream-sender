@@ -8,8 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.0.01"
-RUNTIMEENV = None
+VERSION = "v0.0.01"RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -31,8 +30,11 @@ TASKLIST_CONFIG = {
             {
                 "videoFile": '',
                 "subtitleFile": '',
+                "setting": {},
                 "inputs": '',
-                "outputs": ''
+                "outputs": '',
+                "globalputs": '',
+                
             }
         ],
         "protocol": '',
@@ -56,5 +58,6 @@ FFMPEG_ERRORS = [
     "Filtering and streamcopy cannot be used together",
     "Invalid argument",
     "I/O error",
-    "is not a suitable output format"
+    "is not a suitable output format",
+    "Option not found"
 ]

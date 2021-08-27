@@ -15,6 +15,7 @@ import ffmpy3
 import asyncio
 import sys
 import re
+import copy
 import logging
 
 from manage import TASKLIST_CONFIG, FFMPEG_ERRORS
@@ -97,11 +98,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         # TODO: not implemented yet
         if self.configPath:
-            configJson = simplejson.dumps(TASKLIST_CONFIG)
-            with open(self.configPath, 'w', encoding="utf-8") as f:
-                f.write(configJson)
-                f.flush()
-
+            self.saveConfig(self.configPath)
             QMessageBox.information(self, "提示", "文件已保存")
         else:
             self.on_action_saveas_triggered()
@@ -116,10 +113,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
         if not filePath[0]:
             return
-        configJson = simplejson.dumps(TASKLIST_CONFIG)
-        with open(filePath[0], 'w', encoding="utf-8") as f:
-            f.write(configJson)
-            f.flush()
+
+        self.saveConfig(filePath[0])
 
         self.configPath = filePath[0]
         QMessageBox.information(self, "提示", "文件已保存")
@@ -144,6 +139,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # TODO: not implemented yet
         # raise NotImplementedError
         self.close()
+
+    def saveConfig(self, filePath):
+        tmpConfig = copy.copy(TASKLIST_CONFIG)
+        for key, value in tmpConfig.items():
+            if value.__contains__("state"):
+                value.pop("state")
+        with open(filePath, 'w', encoding="utf-8") as f:
+            f.write(simplejson.dumps(tmpConfig))
+            f.flush()
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
@@ -464,24 +468,25 @@ class FfmpegCorThread(QThread):
 
     async def sendCoroutine(self, row, config):
         self.signal_state.emit((row, 1))
+
+        self.stopBool = False
         loopType = True
 
-        while loopType:
+        while not self.stopBool and loopType:
             if config["send_mode"] == "单次":
                 loopType = False
 
             i = config["current_index"]
             loopBool = False
-            while i < len(config["playlist"]):
+            while not self.stopBool and i < len(config["playlist"]):
                 self.signal_state.emit((row, config["playlist"][i]["videoFile"]))
                 ff = self.send(config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row] = ff
                 line_buf = bytearray()
-                while True:
+                while not self.stopBool:
                     in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
                     if not in_buf:
-                        loopBool = True
                         break
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
@@ -497,8 +502,8 @@ class FfmpegCorThread(QThread):
                             if result:
                                 self.signal_state.emit((row, result[0]))
 
-                if not loopBool:
-                    await ff.wait()
+                # if not loopBool:
+                #     await ff.wait()
 
                 i += 1
                 config["current_index"] = i

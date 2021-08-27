@@ -481,16 +481,14 @@ class FfmpegCorThread(QThread):
                 while True:
                     in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
                     if not in_buf:
-                        print("mark")
                         break
-                    print("mark")
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
                         line = str(line)
                         print(line, file=sys.stderr)
 
-                        if checkOutputErr:
+                        if checkOutputErr(line):
                             break
                         else:
                             result = re.findall(self.resultRE, line)

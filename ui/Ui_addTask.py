@@ -292,7 +292,7 @@ class Ui_addTask(object):
         self.label_5.setText(_translate("addTask", "URI："))
         self.label_6.setText(_translate("addTask", "输出视频格式："))
         self.comboBox_videoFormat.setItemText(0, _translate("addTask", "TS"))
-        self.comboBox_videoFormat.setItemText(1, _translate("addTask", "MPEG4"))
+        self.comboBox_videoFormat.setItemText(1, _translate("addTask", "MP4"))
         self.groupBox_2.setTitle(_translate("addTask", "发送列表"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("addTask", "视频文件"))

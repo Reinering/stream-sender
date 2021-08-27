@@ -362,6 +362,9 @@
                 </item>
                 <item>
                  <widget class="QDoubleSpinBox" name="doubleSpinBox_dB">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
                   <property name="value">
                    <double>0.000000000000000</double>
                   </property>

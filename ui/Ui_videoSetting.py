@@ -171,6 +171,7 @@ class Ui_Dialog(object):
         self.comboBox_dB_direction.addItem("")
         self.horizontalLayout_11.addWidget(self.comboBox_dB_direction)
         self.doubleSpinBox_dB = QtWidgets.QDoubleSpinBox(self.groupBox)
+        self.doubleSpinBox_dB.setDecimals(1)
         self.doubleSpinBox_dB.setProperty("value", 0.0)
         self.doubleSpinBox_dB.setObjectName("doubleSpinBox_dB")
         self.horizontalLayout_11.addWidget(self.doubleSpinBox_dB)

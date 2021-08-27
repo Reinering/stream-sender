@@ -502,8 +502,8 @@ class FfmpegCorThread(QThread):
                             if result:
                                 self.signal_state.emit((row, result[0]))
 
-                # if not loopBool:
-                #     await ff.wait()
+                if not loopBool:
+                    await ff.wait()
 
                 i += 1
                 config["current_index"] = i

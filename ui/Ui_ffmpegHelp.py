@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\git\stream_sender\ui/ffmpegHelp.ui'
+# Form implementation generated from reading ui file 'F:\git\stream_sender\ui\ffmpegHelp.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -62,10 +62,18 @@ class Ui_Dialog(object):
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.tabWidget.addTab(self.tab_3, "")
+        self.tab_4 = QtWidgets.QWidget()
+        self.tab_4.setObjectName("tab_4")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.tab_4)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.textBrowser_2 = QtWidgets.QTextBrowser(self.tab_4)
+        self.textBrowser_2.setObjectName("textBrowser_2")
+        self.gridLayout_3.addWidget(self.textBrowser_2, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_4, "")
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -13981,6 +13989,14 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "ffmpeg"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "ffprobe"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "ffserver"))
+        self.textBrowser_2.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'微软雅黑\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># 音频</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Calibri\'; font-size:8pt;\">ffmpeg  -i input.mp3  -filter</span><span style=\" font-family:\'Microsoft YaHei\'; font-size:8pt;\">：“</span><span style=\" font-family:\'Calibri\'; font-size:8pt;\">loudnorm” output.mp3 </span></p></body></html>"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "常用示例"))
 
 
 if __name__ == "__main__":

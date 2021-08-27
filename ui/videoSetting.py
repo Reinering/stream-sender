@@ -14,6 +14,11 @@ import logging
 
 from .Ui_videoSetting import Ui_Dialog
 
+DEFAULT_FFMPEG_OPTIONS = {
+    "inputs": '',
+    "outputs": '-c copy',       # 等于 -vcodec copy -acodec copy
+    "globalputs": '',
+}
 
 class SettingDialog(QDialog, Ui_Dialog):
     """
@@ -45,21 +50,32 @@ class SettingDialog(QDialog, Ui_Dialog):
         if self.config.__contains__("subtitleFile"):
             self.label_sub.setText(self.config["subtitleFile"])
 
-        if self.config.__contains__("inputs") and self.config["inputs"]:
-            self.plainTextEdit_params_in.setPlainText(self.config["inputs"])
-
-        if self.config.__contains__("outputs") and self.config["outputs"]:
-            self.plainTextEdit_params_out.setPlainText(self.config["outputs"])
-
-        if self.config.__contains__("globalputs") and self.config["globalputs"]:
-            self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
-
-        if self.config.__contains__("setting") and self.config["setting"]:
-            self.spinBox_volume.setValue(self.config["setting"]["volume"])
+        # if self.config.__contains__("inputs") and self.config["inputs"]:
+        #     self.plainTextEdit_params_in.setPlainText(self.config["inputs"])
+        #
+        # if self.config.__contains__("outputs") and self.config["outputs"]:
+        #     self.plainTextEdit_params_out.setPlainText(self.config["outputs"])
+        #
+        # if self.config.__contains__("globalputs") and self.config["globalputs"]:
+        #     self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
+        self.plainTextEdit_params_in.setPlainText(DEFAULT_FFMPEG_OPTIONS["inputs"])
+        self.plainTextEdit_params_out.setPlainText(DEFAULT_FFMPEG_OPTIONS["outputs"])
+        self.plainTextEdit_params_global.setPlainText(DEFAULT_FFMPEG_OPTIONS["globalputs"])
 
         volume = self.getFileVolume(self.config["videoFile"])
         if volume:
             self.label_current_volume.setText(volume)
+
+        if not self.config.__contains__("setting") or not self.config["setting"]:
+            return
+
+        # 音频设置
+        self.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
+        if '%' == self.config["setting"]["volume"][0]:
+            self.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
+        elif "dB" == self.config["setting"]["volume"][0]:
+            self.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
+            self.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
 
     def getFileVolume(self, file):
         try:
@@ -126,14 +142,32 @@ class SettingDialog(QDialog, Ui_Dialog):
         # 视频设置
 
         # 音频设置
-        volume = self.spinBox_volume.value()
-        if volume != 100:
-            self.config["setting"]["volume"] = volume
-            volume = '-filter:a "volume={}"'.format(str(volume/100))
-            if outputs:
-                outputs = volume + ' ' + outputs
-            else:
-                outputs = volume
+        self.config["setting"]["volume"] = [self.comboBox_volume_unit.currentText()]
+        if "%" in self.comboBox_volume_unit.currentText():
+            volume = self.spinBox_volume_percent.value()
+            self.config["setting"]["volume"].append(volume)
+            if 100 != self.spinBox_volume_percent.value():
+                volume = '-filter:a "volume={}"'.format(str(volume/100))
+                if outputs:
+                    outputs = volume + ' ' + outputs.replace("-c copy", "-vcodec copy").replace("-acodec copy", "")
+                else:
+                    outputs = volume
+        elif "dB" == self.comboBox_volume_unit.currentText():
+            volume = self.doubleSpinBox_dB.value()
+            self.config["setting"]["volume"].append(volume)
+            self.config["setting"]["volume"].append(self.comboBox_dB_direction.currentText())
+
+            if 0.00 != self.doubleSpinBox_dB.value():
+                if "增大" == self.comboBox_dB_direction.currentText():
+                    dB_direction = ''
+                elif "减小" == self.comboBox_dB_direction.currentText():
+                    dB_direction = '-'
+
+                volume = '-filter:a "volume={}{}dB"'.format(dB_direction, str(volume))
+                if outputs:
+                    outputs = volume + ' ' + outputs.replace("-c copy", "-vcodec copy").replace("-acodec copy", "")
+                else:
+                    outputs = volume
 
         # 字幕设置
         subFile = self.label_sub.text()
@@ -158,3 +192,8 @@ class SettingDialog(QDialog, Ui_Dialog):
         time.sleep(2)
         self.close()
     
+
+
+def delStr(restr, p0):
+
+    re.sub

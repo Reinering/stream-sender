@@ -52,8 +52,13 @@ TASKLIST_CONFIG = {
 }
 """
 
+# ffmpeg config
+FFMPEG_OPTIONS_DEFAULT = {
+    "inputs": '-re',
+    "outputs": '-c copy',       # 等于 -vcodec copy -acodec copy
+    "globalputs": '',
+}
 
-# ffmpeg
 FFMPEG_ERRORS = [
     'Conversion failed!',
     "Protocol not found",

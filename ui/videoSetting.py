@@ -12,13 +12,9 @@ import time
 import re
 import logging
 
+from manage import FFMPEG_OPTIONS_DEFAULT
 from .Ui_videoSetting import Ui_Dialog
 
-DEFAULT_FFMPEG_OPTIONS = {
-    "inputs": '',
-    "outputs": '-c copy',       # 等于 -vcodec copy -acodec copy
-    "globalputs": '',
-}
 
 class SettingDialog(QDialog, Ui_Dialog):
     """
@@ -58,9 +54,9 @@ class SettingDialog(QDialog, Ui_Dialog):
         #
         # if self.config.__contains__("globalputs") and self.config["globalputs"]:
         #     self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
-        self.plainTextEdit_params_in.setPlainText(DEFAULT_FFMPEG_OPTIONS["inputs"])
-        self.plainTextEdit_params_out.setPlainText(DEFAULT_FFMPEG_OPTIONS["outputs"])
-        self.plainTextEdit_params_global.setPlainText(DEFAULT_FFMPEG_OPTIONS["globalputs"])
+        self.plainTextEdit_params_in.setPlainText(FFMPEG_OPTIONS_DEFAULT["inputs"])
+        self.plainTextEdit_params_out.setPlainText(FFMPEG_OPTIONS_DEFAULT["outputs"])
+        self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
 
         volume = self.getFileVolume(self.config["videoFile"])
         if volume:

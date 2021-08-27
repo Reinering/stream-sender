@@ -24,6 +24,7 @@ class FFmpegHelpDialog(QDialog, Ui_Dialog):
         """
         super(FFmpegHelpDialog, self).__init__(parent)
         self.setupUi(self)
+        self.tabWidget.setCurrentIndex(0)
         self.searchText = ''
         self.searchIter = None
 

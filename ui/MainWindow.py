@@ -270,14 +270,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # TODO: not implemented yet
         # raise NotImplementedError
         row = self.tableWidget.currentRow()
-        print("row", row)
         if row >= 0:
             config = TASKLIST_CONFIG[self.tasklist[row]]
-            self.ffTh.addCoroutine(row, config)
+            if not config.__contains__("state") or config["state"] != 1:
+                self.ffTh.addCoroutine(row, config)
         elif row == -1:
             for i in range(len(self.tasklist)):
                 config = TASKLIST_CONFIG[self.tasklist[i]]
-                self.ffTh.addCoroutine(i, config)
+                if not config.__contains__("state") or config["state"] != 1:
+                    self.ffTh.addCoroutine(i, config)
 
     def setTaskState(self, p0):
         print(p0)
@@ -354,11 +355,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             row = self.tableWidget.currentRow()
             if row >= 0:
                 self.ffTh.stopCoroutine(row)
-            elif row == -1:
-                for i in range(len(self.tasklist)):
-                    self.ffTh.stopCoroutine(i)
         except Exception as e:
             print(e)
+
+    @pyqtSlot()
+    def on_pushButton_stop_all_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        for i in range(len(self.tasklist)):
+            self.ffTh.stopCoroutine(i)
 
     @pyqtSlot()
     def on_pushButton_pause_clicked(self):
@@ -395,6 +403,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(e)
     
 
+    
+
 def checkOutputErr(p0):
     for err in FFMPEG_ERRORS:
         if err in p0:
@@ -410,7 +420,7 @@ class FfmpegCorThread(QThread):
         super(FfmpegCorThread, self).__init__(parent)
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
-        self.processList = {}
+        self.processList = {}       # {row: {ff: ffprocess, stopBool: False}}
         self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
 
     def stop(self):
@@ -428,10 +438,10 @@ class FfmpegCorThread(QThread):
     def stopCoroutine(self, row):
         print("结束协程", row)
         try:
-            self.killFF(self.processList[row])
+            self.processList[row]["stopBool"] = True
+            self.killFF(self.processList[row]["ff"])
         except Exception as e:
             print(e)
-        self.signal_state.emit((row, 0))
 
     def pause(self, row):
         self.stopCoroutine(row)
@@ -464,27 +474,26 @@ class FfmpegCorThread(QThread):
     def addCoroutine(self, row, CONFIG):
         self.row = row
         self.config = CONFIG
+        self.processList[row] = {"stopBool": False}
         asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
 
     async def sendCoroutine(self, row, config):
         self.signal_state.emit((row, 1))
-
-        self.stopBool = False
         loopType = True
 
-        while not self.stopBool and loopType:
+        while not self.processList[row]["stopBool"] and loopType:
             if config["send_mode"] == "单次":
                 loopType = False
 
             i = config["current_index"]
             loopBool = False
-            while not self.stopBool and i < len(config["playlist"]):
+            while not self.processList[row]["stopBool"] and i < len(config["playlist"]):
                 self.signal_state.emit((row, config["playlist"][i]["videoFile"]))
                 ff = self.send(config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
-                self.processList[row] = ff
+                self.processList[row]["ff"] = ff
                 line_buf = bytearray()
-                while not self.stopBool:
+                while not self.processList[row]["stopBool"]:
                     in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
                     if not in_buf:
                         break
@@ -492,7 +501,7 @@ class FfmpegCorThread(QThread):
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
                         line = str(line)
-                        print(line, file=sys.stderr)
+                        # print(line, file=sys.stderr)
 
                         if checkOutputErr(line):
                             loopBool = True
@@ -502,17 +511,18 @@ class FfmpegCorThread(QThread):
                             if result:
                                 self.signal_state.emit((row, result[0]))
 
-                if not loopBool:
-                    await ff.wait()
-
-                i += 1
-                config["current_index"] = i
+                print("mark", self.processList[row]["stopBool"])
+                # if not loopBool:
+                #     await ff.wait()
+                if not self.processList[row]["stopBool"]:
+                    i += 1
+                    config["current_index"] = i
 
             config["current_index"] = 0
             if loopBool:
                 loopType = False
 
-        self.signal_state.emit((self.row, 0))
+        self.signal_state.emit((row, 0))
 
     def send(self, config):
         inputs = {}
@@ -527,7 +537,6 @@ class FfmpegCorThread(QThread):
                 and config["playlist"][config["current_index"]]["inputs"]:
             inParams = inParams + ' ' + config["playlist"][config["current_index"]]["inputs"]
 
-        outputs = {}
         outParams = ''
         if config["protocol"] != "UDP" and config["protocol"] != "RTP" and config["protocol"] != "RTMP":
             logging.critical("协议匹配错误")

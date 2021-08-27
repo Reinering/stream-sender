@@ -16,7 +16,7 @@ import ffmpy3
 import subprocess
 import logging
 
-from manage import TASKLIST_CONFIG
+from manage import TASKLIST_CONFIG, FFMPEG_OPTIONS_DEFAULT
 from .Ui_addTask import Ui_addTask
 from .videoSetting import SettingDialog
 from .showVideoInfo import ShowInfoDialog
@@ -54,6 +54,20 @@ class addTask(QDialog, Ui_addTask):
         # tooltip
         self.tableWidget.setMouseTracking(True)
         self.tableWidget.cellEntered.connect(self.cellEntered)
+
+        self.params_default = ''
+        if FFMPEG_OPTIONS_DEFAULT.__contains__("inputs") and FFMPEG_OPTIONS_DEFAULT["inputs"]:
+            self.params_default = "inputs: " + FFMPEG_OPTIONS_DEFAULT["inputs"]
+
+        if FFMPEG_OPTIONS_DEFAULT.__contains__("outputs") and FFMPEG_OPTIONS_DEFAULT["outputs"]:
+            if self.params_default:
+                self.params_default += ', '
+            self.params_default = self.params_default + "outputs: " + FFMPEG_OPTIONS_DEFAULT["outputs"]
+
+        if FFMPEG_OPTIONS_DEFAULT.__contains__("globalputs") and FFMPEG_OPTIONS_DEFAULT["globalputs"]:
+            if self.params_default:
+                self.params_default += ', '
+            self.params_default = self.params_default + "globalputs: " + FFMPEG_OPTIONS_DEFAULT["globalputs"]
 
     def cellEntered(self, row, column):
         try:
@@ -267,8 +281,10 @@ class addTask(QDialog, Ui_addTask):
                                                            "vedio Files(*.flv);;"
                                                            "all Files(*.*)")
             for file in files[0]:
-                self.addInfo(self.tableWidget, file, '', '')
-                self.taskInfo["playlist"].append({"videoFile": file, "inputs": '-re', "outputs": '-c copy'})
+                self.addInfo(self.tableWidget, file, '', self.params_default)
+                tmp = {"videoFile": file}
+                tmp.update(FFMPEG_OPTIONS_DEFAULT)
+                self.taskInfo["playlist"].append(tmp)
         except Exception as e:
             print(e)
 

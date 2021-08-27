@@ -222,6 +222,19 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButton_stop_all">
+        <property name="font">
+         <font>
+          <family>微软雅黑</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>全部停止</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_clear">
         <property name="font">
          <font>

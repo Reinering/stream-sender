@@ -443,6 +443,11 @@
             <string>MP4</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>FLV</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

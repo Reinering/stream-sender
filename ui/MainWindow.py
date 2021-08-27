@@ -481,6 +481,7 @@ class FfmpegCorThread(QThread):
                 while True:
                     in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
                     if not in_buf:
+                        loopBool = True
                         break
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
@@ -489,6 +490,7 @@ class FfmpegCorThread(QThread):
                         print(line, file=sys.stderr)
 
                         if checkOutputErr(line):
+                            loopBool = True
                             break
                         else:
                             result = re.findall(self.resultRE, line)
@@ -551,7 +553,7 @@ class FfmpegCorThread(QThread):
         #     outParams += ' -vcodec copy -acodec copy'
 
         # out_video_format
-        if config["out_video_format"] == "MPEG4":
+        if config["out_video_format"] == "MP4":
             outParams += ' -f mpeg4'
         elif config["out_video_format"] == "TS":
             outParams += ' -f mpegts'

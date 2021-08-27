@@ -268,7 +268,7 @@ class addTask(QDialog, Ui_addTask):
                                                            "all Files(*.*)")
             for file in files[0]:
                 self.addInfo(self.tableWidget, file, '', '')
-                self.taskInfo["playlist"].append({"videoFile": file, "inputs": '-re', "outputs": '-vcodec copy -acodec copy'})
+                self.taskInfo["playlist"].append({"videoFile": file, "inputs": '-re', "outputs": '-c copy'})
         except Exception as e:
             print(e)
 
@@ -280,11 +280,7 @@ class addTask(QDialog, Ui_addTask):
         @param p0 DESCRIPTION
         @type str
         """
-        if p0 == "TS":
-            self.videoFormat = ".ts"
-        if p0 == "MPEG4":
-            self.videoFormat = ".mp4"
-        print(self.videoFormat)
+        pass
 
 
     @pyqtSlot()

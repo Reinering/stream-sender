@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\git\stream_sender\ui\ffmpegHelp.ui'
+# Form implementation generated from reading ui file 'F:\git\stream_sender\ui/ffmpegHelp.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #

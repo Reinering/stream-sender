@@ -27,7 +27,7 @@ class addTask(QDialog, Ui_addTask):
     Class documentation goes here.
     """
 
-    send_data = pyqtSignal(dict)
+    send_data = pyqtSignal(tuple)
 
     def __init__(self, parent=None):
         """
@@ -83,6 +83,8 @@ class addTask(QDialog, Ui_addTask):
         self.key = key
         self.tableWidget_task = tableWidget
         self.setWindowTitle("修改任务")
+        self.lineEdit_task.setText(key)
+        self.lineEdit_task.setEnabled(False)
         self.comboBox_ip.setCurrentText(TASKLIST_CONFIG[key]["src_ip"])
         self.comboBox_sendMode.setCurrentText(TASKLIST_CONFIG[key]["send_mode"])
         self.comboBox_protocol.setCurrentText(TASKLIST_CONFIG[key]["protocol"])
@@ -352,6 +354,14 @@ class addTask(QDialog, Ui_addTask):
         # TODO: not implemented yet
         # raise NotImplementedError
 
+        task = self.lineEdit_task.text()
+        if not task:
+            QMessageBox.critical(self, "错误", "任务名不能为空")
+            return
+        if self.action == "new" and task != "TASK" and TASKLIST_CONFIG.__contains__(task):
+            QMessageBox.critical(self, "错误", "任务名不能重复")
+            return
+
         sendMode = self.comboBox_sendMode.currentText()
         if not sendMode:
             return
@@ -393,7 +403,7 @@ class addTask(QDialog, Ui_addTask):
             self.taskInfo["out_video_format"] = videoFormat
             self.taskInfo["uri"] = uri
 
-            self.send_data.emit(self.taskInfo)
+            self.send_data.emit((task, self.taskInfo))
         elif self.action == "modify":
             TASKLIST_CONFIG[self.key]["protocol"] = protocol
             TASKLIST_CONFIG[self.key]["dst_ip"] = dst_ip
@@ -406,13 +416,13 @@ class addTask(QDialog, Ui_addTask):
             TASKLIST_CONFIG[self.key]["uri"] = uri
 
             if not TASKLIST_CONFIG[self.key].__contains__("state") or TASKLIST_CONFIG[self.key]["state"]:
-                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"].split('/')[-1])
-            self.tableWidget_task.item(self.row, 1).setText(TASKLIST_CONFIG[self.key]["send_mode"])
-            self.tableWidget_task.item(self.row, 2).setText(TASKLIST_CONFIG[self.key]["protocol"])
-            self.tableWidget_task.item(self.row, 3).setText(TASKLIST_CONFIG[self.key]["src_ip"])
-            self.tableWidget_task.item(self.row, 4).setText(TASKLIST_CONFIG[self.key]["dst_ip"])
-            self.tableWidget_task.item(self.row, 5).setText(str(TASKLIST_CONFIG[self.key]["dst_port"]))
-            self.tableWidget_task.item(self.row, 6).setText(TASKLIST_CONFIG[self.key]["out_video_format"])
+                self.tableWidget_task.item(self.row, 1).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"].split('/')[-1])
+            self.tableWidget_task.item(self.row, 2).setText(TASKLIST_CONFIG[self.key]["send_mode"])
+            self.tableWidget_task.item(self.row, 3).setText(TASKLIST_CONFIG[self.key]["protocol"])
+            self.tableWidget_task.item(self.row, 4).setText(TASKLIST_CONFIG[self.key]["src_ip"])
+            self.tableWidget_task.item(self.row, 5).setText(TASKLIST_CONFIG[self.key]["dst_ip"])
+            self.tableWidget_task.item(self.row, 6).setText(str(TASKLIST_CONFIG[self.key]["dst_port"]))
+            self.tableWidget_task.item(self.row, 7).setText(TASKLIST_CONFIG[self.key]["out_video_format"])
 
         time.sleep(2)
         self.close()

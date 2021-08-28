@@ -39,8 +39,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.configPath = ''
 
         self.videoFormat = ".ts"
-        self.taskkey = 0
-        self.tasklist = []
+        self.taskkey = 0            # 任务序列
+        self.tasklist = []          # 任务名列表
 
         self.ffTh = FfmpegCorThread()
         self.ffTh.signal_state.connect(self.setTaskState)
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableWidget.cellEntered.connect(self.cellEntered)
 
     def cellEntered(self, row, column):
-        if column == 0:
+        if column == 1:
             try:
                 content = self.tableWidget.item(row, column).text()
             except Exception as e:
@@ -229,13 +229,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.addDialog.show()
 
     def addTask(self, p0):
-        key = "task_" + str(self.taskkey)
-        TASKLIST_CONFIG[key] = p0
+        if p0[0] == "TASK":
+            key = "TASK_" + str(self.taskkey)
+        else:
+            key = p0[0]
+        TASKLIST_CONFIG[key] = p0[1]
         TASKLIST_CONFIG[key]["current_index"] = 0
         self.tasklist.append(key)
         self.taskkey += 1
-        self.addInfo(self.tableWidget, p0["playlist"][0]["videoFile"].split('/')[-1], p0["send_mode"], p0["protocol"],
-                     p0["src_ip"], p0["dst_ip"], p0["dst_port"], p0["out_video_format"], '', '')
+        self.addInfo(self.tableWidget, key, p0[1]["playlist"][0]["videoFile"].split('/')[-1], p0[1]["send_mode"], p0[1]["protocol"],
+                     p0[1]["src_ip"], p0[1]["dst_ip"], p0[1]["dst_port"], p0[1]["out_video_format"], '', '')
 
     def clearConfig(self):
         self.taskkey = 0
@@ -281,21 +284,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
         if isinstance(p0[1], int):
             config["state"] = p0[1]
-            item = self.tableWidget.item(p0[0], 8)
+            item = self.tableWidget.item(p0[0], 9)
             if p0[1] == 1:
                 item.setText(self.translate("MainWindow", "是"))
             elif p0[1] == 0:
                 item.setText(self.translate("MainWindow", "否"))
                 config["current_index"] = 0
-                item = self.tableWidget.item(p0[0], 7)
+                item = self.tableWidget.item(p0[0], 8)
                 item.setText(self.translate("MainWindow", ''))
             elif p0[1] == 2:
                 item.setText(self.translate("MainWindow", "暂停"))
         elif isinstance(p0[1], str):
-            item = self.tableWidget.item(p0[0], 0)
+            item = self.tableWidget.item(p0[0], 1)
             item.setText(self.translate("MainWindow", p0[1]))
         elif isinstance(p0[1], tuple):
-            item = self.tableWidget.item(p0[0], 7)
+            item = self.tableWidget.item(p0[0], 8)
             item.setText(self.translate("MainWindow", p0[1][5]))
 
     def parseConfigFile(self, file):
@@ -313,9 +316,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for key, value in config.items():
             try:
-                self.addInfo(self.tableWidget, value["playlist"][0]["videoFile"].split('/')[-1], value["send_mode"], value["protocol"],
+                self.addInfo(self.tableWidget, key, value["playlist"][0]["videoFile"].split('/')[-1], value["send_mode"], value["protocol"],
                              value["src_ip"], value["dst_ip"], value["dst_port"], value["out_video_format"], '', '')
-                key = "task_" + str(self.taskkey)
                 TASKLIST_CONFIG[key] = value
                 TASKLIST_CONFIG[key]["current_index"] = 0
                 self.tasklist.append(key)
@@ -395,7 +397,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     TASKLIST_CONFIG[self.tasklist[row]]["current_index"] += 1
                     if TASKLIST_CONFIG[self.tasklist[row]]["current_index"] >= len(TASKLIST_CONFIG[self.tasklist[row]]["playlist"]):
                         TASKLIST_CONFIG[self.tasklist[row]]["current_index"] = 0
-                    item = self.tableWidget.item(row, 0)
+                    item = self.tableWidget.item(row, 1)
                     item.setText(self.translate("MainWindow", TASKLIST_CONFIG[self.tasklist[row]]["playlist"][TASKLIST_CONFIG[self.tasklist[row]]["current_index"]]["videoFile"].split('/')[-1]))
                 else:
                     self.ffTh.next(row)

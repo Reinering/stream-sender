@@ -52,6 +52,17 @@
          </property>
          <column>
           <property name="text">
+           <string>任务</string>
+          </property>
+          <property name="font">
+           <font>
+            <family>微软雅黑</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </column>
+         <column>
+          <property name="text">
            <string>视频文件名</string>
           </property>
           <property name="font">

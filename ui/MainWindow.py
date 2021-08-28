@@ -4,24 +4,20 @@
 Module implementing MainWindow.
 """
 
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QCoreApplication, Qt, QThread
+from PyQt5.QtCore import pyqtSlot, QCoreApplication, Qt
 from PyQt5.QtWidgets import QMainWindow, QHeaderView, QMenu, QMessageBox, QTableWidgetItem, QFileDialog, QToolTip
 from PyQt5.QtGui import QFont, QCloseEvent, QCursor
 import datetime
 import decimal
 import simplejson
-import subprocess
-import ffmpy3
-import asyncio
-import sys
-import re
 import copy
 import logging
 
-from manage import TASKLIST_CONFIG, FFMPEG_ERRORS
+from manage import TASKLIST_CONFIG
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
 from .ffmpegHelp import FFmpegHelpDialog
+from sender.sender import FfmpegCorThread
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -378,10 +374,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             row = self.tableWidget.currentRow()
             if row >= 0:
-                self.ffTh.pause(row)
+                self.ffTh.pauseCoroutine(row)
             elif row == -1:
                 for i in range(len(self.tasklist)):
-                    self.ffTh.pause(i)
+                    self.ffTh.pauseCoroutine(i)
         except Exception as e:
             print(e)
     
@@ -395,196 +391,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             row = self.tableWidget.currentRow()
             if row >= 0:
-                config = TASKLIST_CONFIG[self.tasklist[row]]
-                self.ffTh.pause(row)
-                config["current_index"] += 1
-                self.ffTh.addCoroutine(row, config)
+                if not TASKLIST_CONFIG[self.tasklist[row]].__contains__("state") or TASKLIST_CONFIG[self.tasklist[row]]["state"] != 1:
+                    TASKLIST_CONFIG[self.tasklist[row]]["current_index"] += 1
+                    if TASKLIST_CONFIG[self.tasklist[row]]["current_index"] >= len(TASKLIST_CONFIG[self.tasklist[row]]["playlist"]):
+                        TASKLIST_CONFIG[self.tasklist[row]]["current_index"] = 0
+                    item = self.tableWidget.item(row, 0)
+                    item.setText(self.translate("MainWindow", TASKLIST_CONFIG[self.tasklist[row]]["playlist"][TASKLIST_CONFIG[self.tasklist[row]]["current_index"]]["videoFile"].split('/')[-1]))
+                else:
+                    self.ffTh.next(row)
         except Exception as e:
             print(e)
     
-
-    
-
-def checkOutputErr(p0):
-    for err in FFMPEG_ERRORS:
-        if err in p0:
-            return True
-    return False
-
-# Coroutine
-class FfmpegCorThread(QThread):
-
-    signal_state = pyqtSignal(tuple)
-
-    def __init__(self, parent=None):
-        super(FfmpegCorThread, self).__init__(parent)
-        self.stopBool = False
-        self.loop = asyncio.new_event_loop()
-        self.processList = {}       # {row: {ff: ffprocess, stopBool: False}}
-        self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
-
-    def stop(self):
-        print("结束线程", self.loop.is_running())
-        self.stopBool = True
-        try:
-            for key, value in self.processList.items():
-                self.stopCoroutine(key)
-            self.processList.clear()
-            self.loop.stop()
-            print(self.loop.is_running())
-        except Exception as e:
-            print(e)
-
-    def stopCoroutine(self, row):
-        print("结束协程", row)
-        try:
-            self.processList[row]["stopBool"] = True
-            self.killFF(self.processList[row]["ff"])
-        except Exception as e:
-            print(e)
-
-    def pause(self, row):
-        self.stopCoroutine(row)
-        self.signal_state.emit((row, 2))
-
-    def killFF(self, ff):
-        try:
-            pid = ff.process.pid
-            print("pid", pid)
-            cmd = "taskkill /pid " + str(pid) + " -t -f"
-            pp = subprocess.Popen(args=cmd,
-                                  stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  shell=True)
-            out = str(pp.stdout.read(), encoding="utf-8")
-            print('out:', out)
-        except Exception as e:
-            print(e)
-
-    def run(self):
-        try:
-            asyncio.set_event_loop(self.loop)
-            self.loop.run_forever()
-        except Exception as e:
-            print(e)
-        finally:
-            self.loop.close()
-
-    def addCoroutine(self, row, CONFIG):
-        self.row = row
-        self.config = CONFIG
-        self.processList[row] = {"stopBool": False}
-        asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
-
-    async def sendCoroutine(self, row, config):
-        self.signal_state.emit((row, 1))
-        loopType = True
-
-        while not self.processList[row]["stopBool"] and loopType:
-            if config["send_mode"] == "单次":
-                loopType = False
-
-            i = config["current_index"]
-            loopBool = False
-            while not self.processList[row]["stopBool"] and i < len(config["playlist"]):
-                self.signal_state.emit((row, config["playlist"][i]["videoFile"]))
-                ff = self.send(config)
-                await ff.run_async(stderr=asyncio.subprocess.PIPE)
-                self.processList[row]["ff"] = ff
-                line_buf = bytearray()
-                while not self.processList[row]["stopBool"]:
-                    in_buf = (await ff.process.stderr.read(128)).replace(b'\r', b'\n')
-                    if not in_buf:
-                        break
-                    line_buf.extend(in_buf)
-                    while b'\n' in line_buf:
-                        line, _, line_buf = line_buf.partition(b'\n')
-                        line = str(line)
-                        # print(line, file=sys.stderr)
-
-                        if checkOutputErr(line):
-                            loopBool = True
-                            break
-                        else:
-                            result = re.findall(self.resultRE, line)
-                            if result:
-                                self.signal_state.emit((row, result[0]))
-
-                print("mark", self.processList[row]["stopBool"])
-                # if not loopBool:
-                #     await ff.wait()
-                if not self.processList[row]["stopBool"]:
-                    i += 1
-                    config["current_index"] = i
-
-            config["current_index"] = 0
-            if loopBool:
-                loopType = False
-
-        self.signal_state.emit((row, 0))
-
-    def send(self, config):
-        inputs = {}
-        outputs = {}
-        globalputs = None
-
-        file = config["playlist"][config["current_index"]]["videoFile"]
-
-        inParams = ''
-        # inputs
-        if config["playlist"][config["current_index"]].__contains__("inputs") \
-                and config["playlist"][config["current_index"]]["inputs"]:
-            inParams = inParams + ' ' + config["playlist"][config["current_index"]]["inputs"]
-
-        outParams = ''
-        if config["protocol"] != "UDP" and config["protocol"] != "RTP" and config["protocol"] != "RTMP":
-            logging.critical("协议匹配错误")
-            return
-
-        outurl = '{}://{}:{}{}'.format(config["protocol"].lower(),
-                                       config["dst_ip"],
-                                       str(config["dst_port"]),
-                                       config["uri"])
-
-        # subtitle
-        if config["playlist"][config["current_index"]].__contains__("subtitleFile") \
-                and config["playlist"][config["current_index"]]["subtitleFile"]:
-            subtitle = config["playlist"][config["current_index"]]["subtitleFile"]
-            if subtitle.split('.')[-1].upper() == "SRT":
-                # outParams += ' -vf subtitles={}'.format(subtitle)
-                inputs[subtitle] = None
-
-        # outputs
-        if config["playlist"][config["current_index"]].__contains__("outputs") \
-                and config["playlist"][config["current_index"]]["outputs"]:
-            outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
-
-        # video_format
-        # if file.split('.')[-1].upper() == "TS":
-        #     outParams += ' -vcodec copy -acodec copy'
-        # else:
-        #     outParams += ' -vcodec copy -acodec copy'
-
-        # out_video_format
-        if config["out_video_format"] == "MP4":
-            outParams += ' -f mpeg4'
-        elif config["out_video_format"] == "TS":
-            outParams += ' -f mpegts'
-
-        # globalputs
-        if config["playlist"][config["current_index"]].__contains__("globalputs") \
-                and config["playlist"][config["current_index"]]["globalputs"]:
-            globalputs.append(config["playlist"][config["current_index"]]["globalputs"])
-        else:
-            globalputs = None
-
-        inputs[file] = inParams
-        outputs[outurl] = outParams
-
-        ff = ffmpy3.FFmpeg(inputs=inputs,
-                           outputs=outputs,
-                           global_options=globalputs)
-        print("cmd: ", ff.cmd, '\n')
-        return ff
 

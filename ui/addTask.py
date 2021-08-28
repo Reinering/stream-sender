@@ -406,7 +406,7 @@ class addTask(QDialog, Ui_addTask):
             TASKLIST_CONFIG[self.key]["uri"] = uri
 
             if not TASKLIST_CONFIG[self.key].__contains__("state") or TASKLIST_CONFIG[self.key]["state"]:
-                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"])
+                self.tableWidget_task.item(self.row, 0).setText(TASKLIST_CONFIG[self.key]["playlist"][TASKLIST_CONFIG[self.key]["current_index"]]["videoFile"].split('/')[-1])
             self.tableWidget_task.item(self.row, 1).setText(TASKLIST_CONFIG[self.key]["send_mode"])
             self.tableWidget_task.item(self.row, 2).setText(TASKLIST_CONFIG[self.key]["protocol"])
             self.tableWidget_task.item(self.row, 3).setText(TASKLIST_CONFIG[self.key]["src_ip"])

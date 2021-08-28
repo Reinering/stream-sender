@@ -64,15 +64,14 @@ class FfmpegCorThread(QThread):
         print("结束协程", row)
         try:
             pid = self.processList[row]["ff"].process.pid
-            print("pid", pid)
             cmd = "taskkill /pid {} -t -f".format(str(pid))
             pp = subprocess.Popen(args=cmd,
                                   stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True)
-            # out = str(pp.stdout.read(), encoding="utf-8")
-            # print('out:', out)
+            out = str(pp.stdout.read(), encoding="utf-8")
+            print('out:', out)
         except Exception as e:
             print(e)
 
@@ -132,8 +131,8 @@ class FfmpegCorThread(QThread):
                 if not self.processList[row]["stopBool"]:
                     i += 1
                     config["current_index"] = i
-                # elif not loopBool:
-                #     await ff.wait()
+                    if not loopBool:
+                        await ff.wait()
 
             config["current_index"] = 0
             if loopBool:

@@ -41,6 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.videoFormat = ".ts"
         self.taskkey = 0            # 任务序列
         self.tasklist = []          # 任务名列表
+        self.subtitlesList = []     # 字幕文件缓存
 
         self.ffTh = FfmpegCorThread()
         self.ffTh.signal_state.connect(self.setTaskState)

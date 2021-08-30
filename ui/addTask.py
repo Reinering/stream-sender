@@ -183,7 +183,7 @@ class addTask(QDialog, Ui_addTask):
                 self.settingDialog = SettingDialog()
                 self.settingDialog.setAttribute(Qt.WA_DeleteOnClose, True)
                 self.settingDialog.setModal(True)
-                self.settingDialog.setParams(row, self.taskInfo["playlist"][row])
+                self.settingDialog.setParams(row, self.comboBox_videoFormat.currentText(), self.taskInfo["playlist"][row])
                 self.settingDialog.signal_setting.connect(self.updateTableWidget)
                 self.settingDialog.show()
             elif action_menu.text() == "删除":
@@ -289,17 +289,6 @@ class addTask(QDialog, Ui_addTask):
                 self.taskInfo["playlist"].append(tmp)
         except Exception as e:
             print(e)
-
-    @pyqtSlot(str)
-    def on_comboBox_videoFormat_currentTextChanged(self, p0):
-        """
-        Slot documentation goes here.
-
-        @param p0 DESCRIPTION
-        @type str
-        """
-        pass
-
 
     @pyqtSlot()
     def on_pushButton_refresh_clicked(self):

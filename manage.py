@@ -31,7 +31,8 @@ TASKLIST_CONFIG = {
                 "videoFile": '',
                 "subtitleFile": '',
                 "setting": {
-                  "volume": ["dB", "12.1", "增大"]  
+                  "volume": ["dB", "12.1", "增大"],
+                  "subtitle": {"addMode": ''}
                 },
                 "inputs": '',
                 "outputs": '',

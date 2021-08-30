@@ -34,8 +34,9 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.row = None
         self.config = None
 
-    def setParams(self, row, config):
+    def setParams(self, row, out_video_format, config):
         self.row = row
+        self.out_video_format = out_video_format
         self.config = config
         self.initWidget()
 
@@ -43,8 +44,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.tabWidget.setCurrentIndex(0)
         self.doubleSpinBox_dB.setHidden(True)
         self.comboBox_dB_direction.setHidden(True)
-        if self.config.__contains__("subtitleFile"):
-            self.label_sub.setText(self.config["subtitleFile"])
+
 
         # if self.config.__contains__("inputs") and self.config["inputs"]:
         #     self.plainTextEdit_params_in.setPlainText(self.config["inputs"])
@@ -72,6 +72,21 @@ class SettingDialog(QDialog, Ui_Dialog):
         elif "dB" == self.config["setting"]["volume"][0]:
             self.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
             self.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
+
+        # 字幕设置
+        if self.out_video_format == "TS" or self.out_video_format == "MP4":
+            self.comboBox_sub_addmode.setEnabled(False)
+        if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
+            self.label_sub.setText(self.config["subtitleFile"])
+            if self.config["setting"].__contains__("subtitle"):
+                if self.config["setting"]["subtitle"].__contains__("addMode"):
+                    self.comboBox_sub_addmode.setCurrentIndex(self.config["setting"]["subtitle"]["addMode"])
+            else:
+                self.comboBox_sub_addmode.setCurrentIndex(1)
+
+        else:
+            if self.out_video_format == "TS" or self.out_video_format == "MP4":
+                self.comboBox_sub_addmode.setCurrentIndex(1)
 
     def getFileVolume(self, file):
         try:
@@ -169,6 +184,10 @@ class SettingDialog(QDialog, Ui_Dialog):
         subFile = self.label_sub.text()
         if subFile:
             self.config["subtitleFile"] = subFile
+            self.config["setting"]["subtitle"] = {}
+            self.config["setting"]["subtitle"]["addMode"] = self.comboBox_sub_addmode.currentIndex()
+            if outputs:
+                outputs = outputs.replace("-c copy", "-acodec copy").replace("-vcodec copy", "")
 
         # 其他设置
 
@@ -189,7 +208,3 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.close()
     
 
-
-def delStr(restr, p0):
-
-    re.sub

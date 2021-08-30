@@ -50,11 +50,15 @@ class FfmpegCorThread(QThread):
             print(e)
 
     def stopCoroutine(self, row):
+        if not self.processList.__contains__(row):
+            return
         self.processList[row]["stopCode"] = 0
         self.processList[row]["stopBool"] = True
         self.killFFByRow(row)
 
     def pauseCoroutine(self, row):
+        if not self.processList.__contains__(row):
+            return
         self.processList[row]["stopCode"] = 2
         self.processList[row]["stopBool"] = True
         self.killFFByRow(row)
@@ -126,7 +130,6 @@ class FfmpegCorThread(QThread):
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
 
-
                 await asyncio.sleep(2)
                 ff = self.createFFmpy3(row, config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
@@ -152,13 +155,17 @@ class FfmpegCorThread(QThread):
                                 self.signal_state.emit((row, result[0]))
 
                 print("mark", self.processList[row]["stopBool"])
-                if not self.processList[row]["stopBool"]:
-                    i += 1
-                    config["current_index"] = i
-                    if not loopBool:
-                        await ff.wait()
-                        print("wait")
-                self.killFFByP(ff)
+                await ff.wait()
+                i += 1
+                config["current_index"] = i
+
+                # if not self.processList[row]["stopBool"]:
+                #     i += 1
+                #     config["current_index"] = i
+                #     if not loopBool:
+                #         await ff.wait()
+                #         print("wait")
+                #     self.killFFByP(ff)
 
 
             config["current_index"] = 0
@@ -170,7 +177,7 @@ class FfmpegCorThread(QThread):
     def createFFmpy3(self, row, config):
         inputs = {}
         outputs = {}
-        globalputs = None
+        globalputs = []
 
         file = config["playlist"][config["current_index"]]["videoFile"]
 

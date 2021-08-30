@@ -212,6 +212,9 @@ class InitWidgetThread(QThread):
         if volume:
             self.mainWindow.label_current_volume.setText(volume)
 
+        if self.out_video_format == "TS" or self.out_video_format == "MP4":
+            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
+
         if not self.config.__contains__("setting") or not self.config["setting"]:
             return
 
@@ -224,8 +227,6 @@ class InitWidgetThread(QThread):
             self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
 
         # 字幕设置
-        if self.out_video_format == "TS" or self.out_video_format == "MP4":
-            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
         if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
             self.mainWindow.label_sub.setText(self.config["subtitleFile"])
             if self.config["setting"].__contains__("subtitle"):

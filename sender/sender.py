@@ -105,7 +105,7 @@ class FfmpegCorThread(QThread):
             self.processList[row]["stopBool"] = False
             self.processList[row]["stopCode"] = 0
         else:
-            self.processList[row] = {"stopBool": False, "stopCode": 0}
+            self.processList[row] = {"stopBool": False, "stopCode": 0, "nextBool": False}
         asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
 
     async def sendCoroutine(self, row, config):

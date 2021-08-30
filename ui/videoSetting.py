@@ -4,14 +4,12 @@
 Module implementing SettingDialog.
 """
 
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 from PyQt5.QtWidgets import QDialog, QFileDialog
-import subprocess
-import ffmpy3
 import time
-import re
 import logging
 
+from utils.audio import getFileVolume
 from manage import FFMPEG_OPTIONS_DEFAULT
 from .Ui_videoSetting import Ui_Dialog
 
@@ -33,19 +31,24 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.setupUi(self)
         self.row = None
         self.config = None
+        self.tabWidget.setCurrentIndex(0)
+        self.doubleSpinBox_dB.setHidden(True)
+        self.comboBox_dB_direction.setHidden(True)
+        self.plainTextEdit_params_in.setPlainText(FFMPEG_OPTIONS_DEFAULT["inputs"])
+        self.plainTextEdit_params_out.setPlainText(FFMPEG_OPTIONS_DEFAULT["outputs"])
+        self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
+
+        self.initWidgetTh = InitWidgetThread()
 
     def setParams(self, row, out_video_format, config):
         self.row = row
         self.out_video_format = out_video_format
         self.config = config
-        self.initWidget()
+        # self.initWidget()
+        self.initWidgetTh.setParams(self, out_video_format, config)
+        self.initWidgetTh.start()
 
     def initWidget(self):
-        self.tabWidget.setCurrentIndex(0)
-        self.doubleSpinBox_dB.setHidden(True)
-        self.comboBox_dB_direction.setHidden(True)
-
-
         # if self.config.__contains__("inputs") and self.config["inputs"]:
         #     self.plainTextEdit_params_in.setPlainText(self.config["inputs"])
         #
@@ -54,11 +57,8 @@ class SettingDialog(QDialog, Ui_Dialog):
         #
         # if self.config.__contains__("globalputs") and self.config["globalputs"]:
         #     self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
-        self.plainTextEdit_params_in.setPlainText(FFMPEG_OPTIONS_DEFAULT["inputs"])
-        self.plainTextEdit_params_out.setPlainText(FFMPEG_OPTIONS_DEFAULT["outputs"])
-        self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
 
-        volume = self.getFileVolume(self.config["videoFile"])
+        volume = getFileVolume(self.config["videoFile"])
         if volume:
             self.label_current_volume.setText(volume)
 
@@ -87,17 +87,6 @@ class SettingDialog(QDialog, Ui_Dialog):
         else:
             if self.out_video_format == "TS" or self.out_video_format == "MP4":
                 self.comboBox_sub_addmode.setCurrentIndex(1)
-
-    def getFileVolume(self, file):
-        try:
-            ff = ffmpy3.FFmpeg(inputs={file: None},
-                                global_options="-filter_complex volumedetect -c:v copy -f null /dev/null")
-            stderr = ff.run(stderr=subprocess.PIPE)
-            if stderr[-1]:
-                result = re.findall(r'mean_volume: ([-.\d]*) dB', str(stderr[-1]))
-                return result[0]
-        except ffmpy3.FFExecutableNotFoundError as e:
-            logging.critical(self, "错误", "文件中音频音量识别失败")
 
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):
@@ -204,7 +193,46 @@ class SettingDialog(QDialog, Ui_Dialog):
 
         self.signal_setting.emit((self.row,))
 
-        time.sleep(2)
+        time.sleep(1)
         self.close()
     
 
+class InitWidgetThread(QThread):
+
+    def __init__(self, parent=None):
+        super(InitWidgetThread, self).__init__(parent)
+
+    def setParams(self, mainWindow, out_video_format, config):
+        self.mainWindow = mainWindow
+        self.out_video_format = out_video_format
+        self.config = config
+
+    def run(self):
+        volume = getFileVolume(self.config["videoFile"])
+        if volume:
+            self.mainWindow.label_current_volume.setText(volume)
+
+        if not self.config.__contains__("setting") or not self.config["setting"]:
+            return
+
+        # 音频设置
+        self.mainWindow.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
+        if '%' == self.config["setting"]["volume"][0]:
+            self.mainWindow.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
+        elif "dB" == self.config["setting"]["volume"][0]:
+            self.mainWindow.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
+            self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
+
+        # 字幕设置
+        if self.out_video_format == "TS" or self.out_video_format == "MP4":
+            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
+        if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
+            self.mainWindow.label_sub.setText(self.config["subtitleFile"])
+            if self.config["setting"].__contains__("subtitle"):
+                if self.config["setting"]["subtitle"].__contains__("addMode"):
+                    self.mainWindow.comboBox_sub_addmode.setCurrentIndex(self.config["setting"]["subtitle"]["addMode"])
+            else:
+                self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
+        else:
+            if self.out_video_format == "TS" or self.out_video_format == "MP4":
+                self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)

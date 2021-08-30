@@ -181,9 +181,9 @@ class addTask(QDialog, Ui_addTask):
         else:
             if action_menu.text() == "设置":
                 self.settingDialog = SettingDialog()
+                self.settingDialog.setParams(row, self.comboBox_videoFormat.currentText(), self.taskInfo["playlist"][row])
                 self.settingDialog.setAttribute(Qt.WA_DeleteOnClose, True)
                 self.settingDialog.setModal(True)
-                self.settingDialog.setParams(row, self.comboBox_videoFormat.currentText(), self.taskInfo["playlist"][row])
                 self.settingDialog.signal_setting.connect(self.updateTableWidget)
                 self.settingDialog.show()
             elif action_menu.text() == "删除":
@@ -413,7 +413,7 @@ class addTask(QDialog, Ui_addTask):
             self.tableWidget_task.item(self.row, 6).setText(str(TASKLIST_CONFIG[self.key]["dst_port"]))
             self.tableWidget_task.item(self.row, 7).setText(TASKLIST_CONFIG[self.key]["out_video_format"])
 
-        time.sleep(2)
+        time.sleep(1)
         self.close()
     
     @pyqtSlot(str)

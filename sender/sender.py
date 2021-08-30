@@ -34,7 +34,7 @@ class FfmpegCorThread(QThread):
         super(FfmpegCorThread, self).__init__(parent)
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
-        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": ''}}
+        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', nextBool: False}}
         self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
 
     def stop(self):
@@ -49,7 +49,20 @@ class FfmpegCorThread(QThread):
         except Exception as e:
             print(e)
 
+    def run(self):
+        try:
+            if not os.path.exists("./subs"):
+                os.mkdir("subs")
+
+            asyncio.set_event_loop(self.loop)
+            self.loop.run_forever()
+        except Exception as e:
+            print(e)
+        finally:
+            self.loop.close()
+
     def stopCoroutine(self, row):
+        print("结束协程", row)
         if not self.processList.__contains__(row):
             return
         self.processList[row]["stopCode"] = 0
@@ -64,10 +77,10 @@ class FfmpegCorThread(QThread):
         self.killFFByRow(row)
 
     def next(self, row):
+        self.processList[row]["nextBool"] = True
         self.killFFByRow(row)
 
     def killFFByRow(self, row):
-        print("结束协程", row)
         if self.processList[row].__contains__("ff"):
             self.killFFByP(self.processList[row]["ff"])
 
@@ -84,18 +97,6 @@ class FfmpegCorThread(QThread):
             print('out:', out)
         except Exception as e:
             print(e)
-
-    def run(self):
-        try:
-            if not os.path.exists("./subs"):
-                os.mkdir("subs")
-
-            asyncio.set_event_loop(self.loop)
-            self.loop.run_forever()
-        except Exception as e:
-            print(e)
-        finally:
-            self.loop.close()
 
     def addCoroutine(self, row, CONFIG):
         self.row = row
@@ -119,7 +120,7 @@ class FfmpegCorThread(QThread):
             while not self.processList[row]["stopBool"] and i < len(config["playlist"]):
                 self.signal_state.emit((row, config["playlist"][i]["videoFile"].split('/')[-1]))
 
-                # subtitles
+                # subtitle file
                 if config["playlist"][i].__contains__("subtitleFile"):
                     if os.path.exists(config["playlist"][i]["subtitleFile"]):
                         if not self.processList[row].__contains__("subtitleFile") or not os.path.exists(self.processList[row]["subtitleFile"]):
@@ -160,14 +161,17 @@ class FfmpegCorThread(QThread):
                 if not self.processList[row]["stopBool"]:
                     i += 1
                     config["current_index"] = i
-                    if not loopBool:
-                        await ff.wait()
-                        print("wait")
-                    self.killFFByP(ff)
+                    if self.processList[row]["nextBool"]:
+                        self.processList[row]["nextBool"] = False
+                    else:
+                        if not loopBool:
+                            await ff.wait()
+                        self.killFFByP(ff)
 
-            config["current_index"] = 0
-            if loopBool:
-                loopType = False
+            if not self.processList[row]["stopBool"]:
+                config["current_index"] = 0
+                if loopBool:
+                    loopType = False
 
         self.signal_state.emit((row, self.processList[row]["stopCode"]))
 

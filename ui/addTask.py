@@ -13,10 +13,10 @@ import datetime
 import decimal
 import time
 import ffmpy3
-import subprocess
 import logging
 
 from manage import TASKLIST_CONFIG, FFMPEG_OPTIONS_DEFAULT
+from utils.video import checkVideo
 from .Ui_addTask import Ui_addTask
 from .videoSetting import SettingDialog
 from .showVideoInfo import ShowInfoDialog
@@ -162,7 +162,6 @@ class addTask(QDialog, Ui_addTask):
         # modify_item.triggered.connect(self.modifyUser)
         del_item = _menu.addAction("删除")
         del_item.setFont(font)
-        # del_item.triggered.connect(self.deluser)
         check_item = _menu.addAction("查看信息")
         check_item.setFont(font)
         setting_item = _menu.addAction("设置")
@@ -192,7 +191,16 @@ class addTask(QDialog, Ui_addTask):
                     self.taskInfo["playlist"].pop(row)
                     tableWidget.removeRow(row)
             elif action_menu.text() == "查看信息":
-                self.checkVideo(self.taskInfo["playlist"][row]["videoFile"])
+                try:
+                    stdout = checkVideo(self.taskInfo["playlist"][row]["videoFile"])
+                    self.showInfoDialog = ShowInfoDialog()
+                    self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+                    self.showInfoDialog.setModal(True)
+                    self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
+                    self.showInfoDialog.show()
+                except ffmpy3.FFExecutableNotFoundError as e:
+                    logging.error("错误, 未找到ffprobe {}".format(e))
+                    QMessageBox.critical(self, "错误", "未找到ffprobe")
             else:
                 pass
 
@@ -229,19 +237,18 @@ class addTask(QDialog, Ui_addTask):
     #         else:
     #             return
     #         self.userDialog.show()
-
-    def checkVideo(self, file):
-        try:
-            ff = ffmpy3.FFprobe(inputs={file: None},
-                                global_options="-v quiet -print_format json -show_format -show_streams")
-            stdout = ff.run(stdout=subprocess.PIPE)
-            self.showInfoDialog = ShowInfoDialog()
-            self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
-            self.showInfoDialog.setModal(True)
-            self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
-            self.showInfoDialog.show()
-        except ffmpy3.FFExecutableNotFoundError as e:
-            QMessageBox.critical(self, "错误", "未找到ffprobe")
+    #
+    # @pyqtSlot(QPoint)
+    # def on_tableWidget_customContextMenuRequested(self, pos):
+    #     """
+    #     Slot documentation goes here.
+    #
+    #     @param pos DESCRIPTION
+    #     @type QPoint
+    #     """
+    #     # TODO: not implemented yet
+    #     raise NotImplementedError
+    #     self.createRightMenu(self.tableWidget_store_keep, self.tableWidget_store_keep.mapToGlobal(pos))
 
     def updateTableWidget(self, p0):
         if isinstance(p0, tuple):
@@ -323,18 +330,6 @@ class addTask(QDialog, Ui_addTask):
             self.comboBox_ip.addItem("")
             self.comboBox_ip.setItemText(i, self.translate("MainWindow", ipv4[0]))
             i += 1
-    
-    # @pyqtSlot(QPoint)
-    # def on_tableWidget_customContextMenuRequested(self, pos):
-    #     """
-    #     Slot documentation goes here.
-    #
-    #     @param pos DESCRIPTION
-    #     @type QPoint
-    #     """
-    #     # TODO: not implemented yet
-    #     raise NotImplementedError
-    #     self.createRightMenu(self.tableWidget_store_keep, self.tableWidget_store_keep.mapToGlobal(pos))
     
     @pyqtSlot(int, int)
     def on_tableWidget_cellDoubleClicked(self, row, column):

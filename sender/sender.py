@@ -210,7 +210,6 @@ class FfmpegCorThread(QThread):
         if config["playlist"][config["current_index"]].__contains__("outputs") \
                 and config["playlist"][config["current_index"]]["outputs"]:
             outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
-        print("outParams", outParams)
 
         # out_video_format
         if config["out_video_format"] == "MP4":

@@ -145,6 +145,8 @@ class FfmpegCorThread(QThread):
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
                         print(line, file=sys.stderr)
+                        if not line:
+                            continue
                         line = str(line)
                         if checkOutputErr(line):
                             loopBool = True
@@ -155,18 +157,13 @@ class FfmpegCorThread(QThread):
                                 self.signal_state.emit((row, result[0]))
 
                 print("mark", self.processList[row]["stopBool"])
-                await ff.wait()
-                i += 1
-                config["current_index"] = i
-
-                # if not self.processList[row]["stopBool"]:
-                #     i += 1
-                #     config["current_index"] = i
-                #     if not loopBool:
-                #         await ff.wait()
-                #         print("wait")
-                #     self.killFFByP(ff)
-
+                if not self.processList[row]["stopBool"]:
+                    i += 1
+                    config["current_index"] = i
+                    if not loopBool:
+                        await ff.wait()
+                        print("wait")
+                    self.killFFByP(ff)
 
             config["current_index"] = 0
             if loopBool:
@@ -213,6 +210,7 @@ class FfmpegCorThread(QThread):
         if config["playlist"][config["current_index"]].__contains__("outputs") \
                 and config["playlist"][config["current_index"]]["outputs"]:
             outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
+        print("outParams", outParams)
 
         # out_video_format
         if config["out_video_format"] == "MP4":

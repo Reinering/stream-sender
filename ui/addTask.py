@@ -268,6 +268,9 @@ class addTask(QDialog, Ui_addTask):
             if params:
                 self.tableWidget.item(p0[0], 2).setText(params)
 
+    def getFiles(self, p0):
+        print("p0", p0)
+
     @pyqtSlot()
     def on_pushButton_openPath_clicked(self):
         """
@@ -275,6 +278,19 @@ class addTask(QDialog, Ui_addTask):
         """
         print("点击选择文件")
         try:
+            # self.fileDialog = QFileDialog()
+            # self.fileDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+            # self.fileDialog.setModal(True)
+            # self.fileDialog.setFileMode(3)
+            # self.fileDialog.filesSelected.connect(self.getFiles)
+            # self.fileDialog.setNameFilters(["vedio Files(*.ts)",
+            #                                "vedio Files(*.mp4)",
+            #                                "vedio Files(*.avi)",
+            #                                "vedio Files(*.mkv)",
+            #                                "vedio Files(*.flv)",
+            #                                "all Files(*.*)"])
+            # self.fileDialog.show()
+
             files = QFileDialog.getOpenFileNames(self, u"选择视频文件", "/",
                                                            "vedio Files(*.ts);;"
                                                            "vedio Files(*.mp4);;"

@@ -197,6 +197,9 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.close()
     
 
+
+
+
 class InitWidgetThread(QThread):
 
     def __init__(self, parent=None):
@@ -214,6 +217,14 @@ class InitWidgetThread(QThread):
 
         if self.out_video_format == "TS" or self.out_video_format == "MP4":
             self.mainWindow.comboBox_sub_addmode.setEnabled(False)
+
+        # 参数设置
+        if self.config["inputs"]:
+            self.mainWindow.label_params_in.setText(self.config["inputs"])
+        if self.config["outputs"]:
+            self.mainWindow.label_params_out.setText(self.config["outputs"])
+        if self.config["globalputs"]:
+            self.mainWindow.label_params_global.setText(self.config["globalputs"])
 
         if self.config.__contains__("setting") and self.config["setting"]:
 

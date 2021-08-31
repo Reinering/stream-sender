@@ -470,6 +470,84 @@ class addTask(QDialog, Ui_addTask):
             self.spinBox_port.setValue(5053)
         elif p0 == "238.1.238.54":
             self.spinBox_port.setValue(5054)
+    
+    @pyqtSlot()
+    def on_pushButton_up_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        row = self.tableWidget.currentRow()
+        if row <= 0:
+            return
+        for i in range(self.tableWidget.columnCount()):
+            try:
+                item1 = self.tableWidget.item(row, i).text()
+            except Exception as e:
+                item1 = None
+            try:
+                item0 = self.tableWidget.item(row-1, i).text()
+            except Exception as e:
+                item0 = None
+
+            if item1 != None and item0 != None:
+                if item0 == item1:
+                    continue
+                self.tableWidget.item(row, i).setText(item0)
+                self.tableWidget.item(row-1, i).setText(item1)
+            elif item1 == None and item0 == None:
+                continue
+            else:
+                if item1 == None:
+                    self.tableWidget.item(row, i).setText(item0)
+                    self.tableWidget.removeCellWidget(row-1, i)
+                else:
+                    self.tableWidget.item(row-1, i).setText(item1)
+                    self.tableWidget.removeCellWidget(row, i)
+
+        tmp = self.taskInfo["playlist"][row]
+        self.taskInfo["playlist"][row] = self.taskInfo["playlist"][row-1]
+        self.taskInfo["playlist"][row-1] = tmp
+
+    @pyqtSlot()
+    def on_pushButton_down_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        row = self.tableWidget.currentRow()
+        if row < 0 or row >= self.tableWidget.rowCount() - 1:
+            return
+        for i in range(self.tableWidget.columnCount()):
+            try:
+                item0 = self.tableWidget.item(row, i).text()
+            except Exception as e:
+                item0 = None
+            try:
+                item1 = self.tableWidget.item(row+1, i).text()
+            except Exception as e:
+                item1 = None
+
+            if item1 != None and item0 != None:
+                if item0 == item1:
+                    continue
+                self.tableWidget.item(row, i).setText(item1)
+                self.tableWidget.item(row+1, i).setText(item0)
+            elif item1 == None and item0 == None:
+                continue
+            else:
+                if item0 == None:
+                    self.tableWidget.item(row, i).setText(item1)
+                    self.tableWidget.removeCellWidget(row+1, i)
+                else:
+                    self.tableWidget.item(row+1, i).setText(item0)
+                    self.tableWidget.removeCellWidget(row, i)
+
+        tmp = self.taskInfo["playlist"][row]
+        self.taskInfo["playlist"][row] = self.taskInfo["playlist"][row+1]
+        self.taskInfo["playlist"][row+1] = tmp
 
 
 

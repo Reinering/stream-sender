@@ -103,8 +103,8 @@ def overrideSetting(file, now):
                     line = "VERSION = \"" + Version + '\"\r'
                 elif "Computer_Digits = " in line:
                     line = "Computer_Digits = \"" + str(Computer_Digits) + '\"\r'
-                elif "Package_Time = " in line:
-                    line = "Package_Time = \"" + now + '\"\r'
+                elif "PackageTime = " in line:
+                    line = "PackageTime = \"" + now + '\"\r'
                 elif "TYPENUM = " in line:
                     line = "TYPENUM = " + str(TypeNum) + '\r'
                 elif "CURRENT_DB = " in line:

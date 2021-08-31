@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="index">
+    <file>index.png</file>
+  </qresource>
+</RCC>

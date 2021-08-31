@@ -17,6 +17,7 @@ from manage import TASKLIST_CONFIG
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
 from .ffmpegHelp import FFmpegHelpDialog
+from .about import Dialog_about
 from sender.sender import FfmpegCorThread
 
 
@@ -425,3 +426,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.ffTh.next(row)
         except Exception as e:
             print(e)
+    
+    @pyqtSlot()
+    def on_action_about_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.aboutDialog = Dialog_about()
+        self.aboutDialog.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.aboutDialog.setModal(True)
+        self.aboutDialog.show()

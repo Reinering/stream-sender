@@ -11,7 +11,7 @@ import platform
 import os
 import re
 
-Version = "v0.0.01"
+Version = "v0.1.00"
 Computer_Digits = 'x64'
 TypeNum = 2
 pyVer = "3.8.5"
@@ -234,4 +234,7 @@ if __name__ == "__main__":
     PackageArgs['iconPath'] = r'pic\favicon.ico'
     PackageArgs['distpath'] = r'G:\PythonAPP_Package\Stream_Sender'
 
+    TypeNum = 4
+    packaging()
+    TypeNum = 2
     packaging()

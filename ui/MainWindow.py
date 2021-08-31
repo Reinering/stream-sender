@@ -405,4 +405,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
     
-
+    @pyqtSlot()
+    def on_pushButton_previous_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        try:
+            row = self.tableWidget.currentRow()
+            if row >= 0:
+                if not TASKLIST_CONFIG[self.tasklist[row]].__contains__("state") or TASKLIST_CONFIG[self.tasklist[row]]["state"] != 1:
+                    TASKLIST_CONFIG[self.tasklist[row]]["current_index"] -= 1
+                    if TASKLIST_CONFIG[self.tasklist[row]]["current_index"] < 0:
+                        TASKLIST_CONFIG[self.tasklist[row]]["current_index"] = len(TASKLIST_CONFIG[self.tasklist[row]]["playlist"]) -1
+                    item = self.tableWidget.item(row, 1)
+                    item.setText(self.translate("MainWindow", TASKLIST_CONFIG[self.tasklist[row]]["playlist"][TASKLIST_CONFIG[self.tasklist[row]]["current_index"]]["videoFile"].split('/')[-1]))
+                else:
+                    self.ffTh.next(row)
+        except Exception as e:
+            print(e)

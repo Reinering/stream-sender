@@ -194,6 +194,19 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButton_previous">
+        <property name="font">
+         <font>
+          <family>微软雅黑</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>上一个</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_next">
         <property name="font">
          <font>

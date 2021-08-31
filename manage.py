@@ -8,7 +8,8 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.0.01"RUNTIMEENV = None
+VERSION = "v0.0.01"
+RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -67,5 +68,6 @@ FFMPEG_ERRORS = [
     "Invalid argument",
     "I/O error",
     "is not a suitable output format",
-    "Option not found"
+    "Option not found",
+    "Bitstream filter not found"
 ]

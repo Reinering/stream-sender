@@ -182,14 +182,9 @@ class SettingDialog(QDialog, Ui_Dialog):
 
         # 全局设置
 
-        if inputs:
-            self.config["inputs"] = inputs.replace('\n', ' ')
-
-        if outputs:
-            self.config["outputs"] = outputs.replace('\n', ' ')
-
-        if outputs:
-            self.config["globalputs"] = globalputs.replace('\n', ' ')
+        self.config["inputs"] = inputs.replace('\n', ' ')
+        self.config["outputs"] = outputs.replace('\n', ' ')
+        self.config["globalputs"] = globalputs.replace('\n', ' ')
 
         self.signal_setting.emit((self.row,))
 

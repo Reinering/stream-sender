@@ -215,26 +215,26 @@ class InitWidgetThread(QThread):
         if self.out_video_format == "TS" or self.out_video_format == "MP4":
             self.mainWindow.comboBox_sub_addmode.setEnabled(False)
 
-        if not self.config.__contains__("setting") or not self.config["setting"]:
-            return
+        if self.config.__contains__("setting") and self.config["setting"]:
 
-        # 音频设置
-        self.mainWindow.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
-        if '%' == self.config["setting"]["volume"][0]:
-            self.mainWindow.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
-        elif "dB" == self.config["setting"]["volume"][0]:
-            self.mainWindow.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
-            self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
+            # 音频设置
+            self.mainWindow.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
+            if '%' == self.config["setting"]["volume"][0]:
+                self.mainWindow.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
+            elif "dB" == self.config["setting"]["volume"][0]:
+                self.mainWindow.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
+                self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
 
-        # 字幕设置
-        if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
-            self.mainWindow.label_sub.setText(self.config["subtitleFile"])
-            if self.config["setting"].__contains__("subtitle"):
-                if self.config["setting"]["subtitle"].__contains__("addMode"):
-                    self.mainWindow.comboBox_sub_addmode.setCurrentIndex(self.config["setting"]["subtitle"]["addMode"])
+            # 字幕设置
+            if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
+                self.mainWindow.label_sub.setText(self.config["subtitleFile"])
+                if self.config["setting"].__contains__("subtitle"):
+                    if self.config["setting"]["subtitle"].__contains__("addMode"):
+                        self.mainWindow.comboBox_sub_addmode.setCurrentIndex(self.config["setting"]["subtitle"]["addMode"])
+                else:
+                    self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
             else:
-                self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
-        else:
-            if self.out_video_format == "TS" or self.out_video_format == "MP4":
-                self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
+                if self.out_video_format == "TS" or self.out_video_format == "MP4":
+                    self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
+
         self.mainWindow.pushButton_ok.setEnabled(True)

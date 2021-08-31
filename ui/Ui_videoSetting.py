@@ -374,6 +374,7 @@ class Ui_Dialog(object):
         spacerItem15 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem15)
         self.pushButton_ok = QtWidgets.QPushButton(Dialog)
+        self.pushButton_ok.setEnabled(False)
         self.pushButton_ok.setMaximumSize(QtCore.QSize(50, 16777215))
         self.pushButton_ok.setObjectName("pushButton_ok")
         self.horizontalLayout_2.addWidget(self.pushButton_ok)

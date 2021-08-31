@@ -237,3 +237,4 @@ class InitWidgetThread(QThread):
         else:
             if self.out_video_format == "TS" or self.out_video_format == "MP4":
                 self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
+        self.mainWindow.pushButton_ok.setEnabled(True)

@@ -4,9 +4,15 @@
 Module implementing SettingDialog.
 """
 
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtGui import QCloseEvent
 import time
+import subprocess
+import ffmpy3
+import re
+import sys
+import asyncio
 import logging
 
 from utils.audio import getFileVolume
@@ -39,6 +45,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
 
         self.initWidgetTh = InitWidgetThread()
+        self.initWidgetTh.send_volume.connect(self.setVolume)
 
     def setParams(self, row, out_video_format, config):
         self.row = row
@@ -87,6 +94,19 @@ class SettingDialog(QDialog, Ui_Dialog):
         else:
             if self.out_video_format == "TS" or self.out_video_format == "MP4":
                 self.comboBox_sub_addmode.setCurrentIndex(1)
+
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        try:
+            self.initWidgetTh.stop()
+        except Exception as e:
+            print(e)
+
+    def setVolume(self, p0):
+        if p0:
+            self.mainWindow.label_current_volume.setText(p0)
+        if self.out_video_format == "TS" or self.out_video_format == "MP4":
+            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
 
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):
@@ -197,6 +217,8 @@ class SettingDialog(QDialog, Ui_Dialog):
 
 class InitWidgetThread(QThread):
 
+    send_volume = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super(InitWidgetThread, self).__init__(parent)
 
@@ -204,14 +226,25 @@ class InitWidgetThread(QThread):
         self.mainWindow = mainWindow
         self.out_video_format = out_video_format
         self.config = config
+        self.stopBool = False
+
+    def stop(self):
+        try:
+            self.stopBool = True
+            pid = self.ff.process.pid
+            cmd = "taskkill /pid {} -t -f".format(str(pid))
+            pp = subprocess.Popen(args=cmd,
+                                  stdin=subprocess.PIPE,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  shell=True)
+            out = str(pp.stdout.read(), encoding="utf-8")
+            print('out:', out)
+        except Exception as e:
+            print(e)
 
     def run(self):
-        volume = getFileVolume(self.config["videoFile"])
-        if volume:
-            self.mainWindow.label_current_volume.setText(volume)
-
-        if self.out_video_format == "TS" or self.out_video_format == "MP4":
-            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
+        self.stopBool = False
 
         # 参数设置
         if self.config["inputs"]:
@@ -244,3 +277,48 @@ class InitWidgetThread(QThread):
                     self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
 
         self.mainWindow.pushButton_ok.setEnabled(True)
+
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.getFileVolume(self.config["videoFile"]))
+
+
+    # def getFileVolume(self, file):
+    #     try:
+    #         self.ff = ffmpy3.FFmpeg(inputs={file: None},
+    #                            global_options="-filter_complex volumedetect -c:v copy -f null /dev/null")
+    #         stderr = self.ff.run(stderr=subprocess.PIPE)
+    #         print(stderr)
+    #         if stderr[-1]:
+    #             result = re.findall(r'mean_volume: ([-.\d]*) dB', str(stderr[-1]))
+    #             return result[0]
+    #     except ffmpy3.FFExecutableNotFoundError as e:
+    #         print("错误", "文件中音频音量识别失败", e)
+    #
+    #     return
+
+    async def getFileVolume(self, file):
+        self.ff = ffmpy3.FFmpeg(inputs={file: None},
+                                global_options="-filter_complex volumedetect -c:v copy -f null /dev/null")
+
+        await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
+
+        line_buf = bytearray()
+        while not self.stopBool:
+            in_buf = (await self.ff.process.stderr.read(128)).replace(b'\r', b'\n')
+            if not in_buf:
+                break
+            line_buf.extend(in_buf)
+            while b'\n' in line_buf and not self.stopBool:
+                line, _, line_buf = line_buf.partition(b'\n')
+                print(line, file=sys.stderr)
+                if not line:
+                    continue
+                line = str(line)
+                result = re.findall(r'mean_volume: ([-.\d]*) dB', str(line))
+                if result and result[0]:
+                    self.send_volume.emit(result[0])
+                    break
+        if not self.stopBool:
+            await self.ff.wait()
+

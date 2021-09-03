@@ -131,7 +131,6 @@ class FfmpegCorThread(QThread):
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
 
-                await asyncio.sleep(2)
                 ff = self.createFFmpy3(row, config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row]["ff"] = ff

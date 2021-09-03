@@ -283,7 +283,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def setTaskState(self, p0):
         print(p0)
-        config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
+        try:
+            config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
+        except Exception as e:
+            return
         if isinstance(p0[1], int):
             config["state"] = p0[1]
             item = self.tableWidget.item(p0[0], 9)

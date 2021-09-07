@@ -104,9 +104,9 @@ class SettingDialog(QDialog, Ui_Dialog):
 
     def setVolume(self, p0):
         if p0:
-            self.mainWindow.label_current_volume.setText(p0)
+            self.label_current_volume.setText(p0)
         if self.out_video_format == "TS" or self.out_video_format == "MP4":
-            self.mainWindow.comboBox_sub_addmode.setEnabled(False)
+            self.comboBox_sub_addmode.setEnabled(False)
 
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):

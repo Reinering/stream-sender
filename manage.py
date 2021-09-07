@@ -8,7 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202109061448"RUNTIMEENV = None
+VERSION = "v0.1.00"PackageTime = "202109071636"RUNTIMEENV = None
 LOGLEVEL = 2
 
 

@@ -201,6 +201,9 @@ class addTask(QDialog, Ui_addTask):
                 except ffmpy3.FFExecutableNotFoundError as e:
                     logging.error("错误, 未找到ffprobe {}".format(e))
                     QMessageBox.critical(self, "错误", "未找到ffprobe")
+                except ffmpy3.FFRuntimeError as e:
+                    logging.error("错误, ffprobe执行错误 {}".format(e))
+                    QMessageBox.critical(self, "错误", "ffprobe执行错误")
             else:
                 pass
 

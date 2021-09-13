@@ -16,6 +16,7 @@ import asyncio
 import logging
 
 from utils.audio import getFileVolume
+from utils.video import checkOutputErr
 from manage import FFMPEG_OPTIONS_DEFAULT
 from .Ui_videoSetting import Ui_Dialog
 
@@ -304,6 +305,7 @@ class InitWidgetThread(QThread):
         await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
 
         line_buf = bytearray()
+        loopBool = False
         while not self.stopBool:
             in_buf = (await self.ff.process.stderr.read(128)).replace(b'\r', b'\n')
             if not in_buf:
@@ -316,9 +318,13 @@ class InitWidgetThread(QThread):
                     continue
                 line = str(line)
                 result = re.findall(r'mean_volume: ([-.\d]*) dB', str(line))
-                if result and result[0]:
-                    self.send_volume.emit(result[0])
+                if checkOutputErr(line):
+                    loopBool = True
                     break
-        if not self.stopBool:
+                else:
+                    if result and result[0]:
+                        self.send_volume.emit(result[0])
+                        break
+        if not self.stopBool and not loopBool:
             await self.ff.wait()
 

@@ -8,7 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202109071636"RUNTIMEENV = None
+VERSION = "v0.1.00"PackageTime = "202109131332"RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -69,5 +69,7 @@ FFMPEG_ERRORS = [
     "is not a suitable output format",
     "Option not found",
     "Bitstream filter not found",
-    "Invalid data found when processing input"
+    "Invalid data found when processing input",
+    "EBML header parsing failed",
+
 ]

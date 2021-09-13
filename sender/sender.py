@@ -14,15 +14,9 @@ import sys
 import os
 import logging
 
-from manage import FFMPEG_ERRORS
+
 from utils.file import modifyFileCode
-
-
-def checkOutputErr(p0):
-    for err in FFMPEG_ERRORS:
-        if err in p0:
-            return True
-    return False
+from utils.video import checkOutputErr
 
 
 # Coroutine

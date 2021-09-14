@@ -426,7 +426,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     item = self.tableWidget.item(row, 1)
                     item.setText(self.translate("MainWindow", TASKLIST_CONFIG[self.tasklist[row]]["playlist"][TASKLIST_CONFIG[self.tasklist[row]]["current_index"]]["videoFile"].split('/')[-1]))
                 else:
-                    self.ffTh.next(row)
+                    self.ffTh.previous(row)
         except Exception as e:
             print(e)
     

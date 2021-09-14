@@ -28,7 +28,7 @@ class FfmpegCorThread(QThread):
         super(FfmpegCorThread, self).__init__(parent)
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
-        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', nextBool: False}}
+        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', mvBool: False, }}
         self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
 
     def stop(self):
@@ -71,7 +71,13 @@ class FfmpegCorThread(QThread):
         self.killFFByRow(row)
 
     def next(self, row):
-        self.processList[row]["nextBool"] = True
+        self.processList[row]["mvCode"] = 1
+        self.processList[row]["mvBool"] = True
+        self.killFFByRow(row)
+
+    def previous(self, row):
+        self.processList[row]["mvCode"] = 0
+        self.processList[row]["mvBool"] = True
         self.killFFByRow(row)
 
     def killFFByRow(self, row):
@@ -99,7 +105,7 @@ class FfmpegCorThread(QThread):
             self.processList[row]["stopBool"] = False
             self.processList[row]["stopCode"] = 0
         else:
-            self.processList[row] = {"stopBool": False, "stopCode": 0, "nextBool": False}
+            self.processList[row] = {"stopBool": False, "stopCode": 0, "mvCode": 0, "mvBool": False}
         asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
 
     async def sendCoroutine(self, row, config):
@@ -150,16 +156,19 @@ class FfmpegCorThread(QThread):
                             if result:
                                 self.signal_state.emit((row, result[0]))
 
-                print("mark", self.processList[row]["stopBool"])
                 if not self.processList[row]["stopBool"]:
-                    i += 1
-                    config["current_index"] = i
-                    if self.processList[row]["nextBool"]:
-                        self.processList[row]["nextBool"] = False
+                    if self.processList[row]["mvBool"]:
+                        self.processList[row]["mvBool"] = False
+                        if self.processList[row]["mvCode"]:
+                            i += 1
+                        else:
+                            i -= 1
                     else:
+                        i += 1
                         if not loopBool:
                             await ff.wait()
                         self.killFFByP(ff)
+                    config["current_index"] = i
 
             if not self.processList[row]["stopBool"]:
                 config["current_index"] = 0

@@ -127,7 +127,7 @@ class FfmpegCorThread(QThread):
                             subName = "{}{}_{}{}".format("subs/", row, i, '')
                             if not os.path.exists(subName):
                                 modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
-                            self.processList[row]["subtitleFile"] = subName
+                            self.processList[i]["subtitleFile"] = subName
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
 

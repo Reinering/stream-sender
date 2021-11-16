@@ -11,9 +11,10 @@ import datetime
 import decimal
 import simplejson
 import copy
+import os
 import logging
 
-from manage import TASKLIST_CONFIG
+from manage import TASKLIST_CONFIG, BUNDLE_DIR, RUNTIMEENV
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
 from .ffmpegHelp import FFmpegHelpDialog
@@ -43,8 +44,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.taskkey = 0            # 任务序列
         self.tasklist = []          # 任务名列表
         self.subtitlesList = []     # 字幕文件缓存
+        if RUNTIMEENV == "pyinstaller":
+            self.subDir = os.path.join("subs", BUNDLE_DIR.split('\\')[-1])
+        else:
+            self.subDir = "subs"
 
         self.ffTh = FfmpegCorThread()
+        self.ffTh.setParams(subDir=self.subDir)
         self.ffTh.signal_state.connect(self.setTaskState)
         self.ffTh.start()
 
@@ -149,6 +155,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
+        if RUNTIMEENV == "pyinstaller" and os.path.exists(self.subDir):
+            os.remove(self.subDir)
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):

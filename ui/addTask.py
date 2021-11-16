@@ -158,7 +158,7 @@ class addTask(QDialog, Ui_addTask):
 
         _menu = QMenu()
         # modify_item = _menu.addAction("修改")
-        # modify_item.setFont(font)
+        # modify_item.setFont(font)checkVideo
         # modify_item.triggered.connect(self.modifyUser)
         del_item = _menu.addAction("删除")
         del_item.setFont(font)
@@ -197,6 +197,7 @@ class addTask(QDialog, Ui_addTask):
                     self.showInfoDialog.setAttribute(Qt.WA_DeleteOnClose, True)
                     self.showInfoDialog.setModal(True)
                     self.showInfoDialog.textBrowser.setText(str(stdout[0], encoding="utf-8"))
+                    self.taskInfo["playlist"][row]["videoInfo"] = stdout[0]
                     self.showInfoDialog.show()
                 except ffmpy3.FFExecutableNotFoundError as e:
                     logging.error("错误, 未找到ffprobe {}".format(e))

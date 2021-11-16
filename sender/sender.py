@@ -14,9 +14,9 @@ import sys
 import os
 import logging
 
-
+from manage import ROOT_PATH, BUNDLE_DIR
 from utils.file import modifyFileCode
-from utils.video import checkOutputErr
+from utils.video import calcScale, checkOutputErr
 
 
 # Coroutine
@@ -26,10 +26,15 @@ class FfmpegCorThread(QThread):
 
     def __init__(self, parent=None):
         super(FfmpegCorThread, self).__init__(parent)
+        self.subDir = None
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
         self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', mvBool: False, }}
         self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
+
+    def setParams(self, **kwargs):
+        if kwargs.__contains__("subDir"):
+            self.subDir = kwargs["subDir"]
 
     def stop(self):
         print("结束线程", self.loop.is_running())
@@ -45,8 +50,8 @@ class FfmpegCorThread(QThread):
 
     def run(self):
         try:
-            if not os.path.exists("./subs"):
-                os.mkdir("subs")
+            if not os.path.exists(self.subDir):
+                os.makedirs(self.subDir)
 
             asyncio.set_event_loop(self.loop)
             self.loop.run_forever()
@@ -124,10 +129,10 @@ class FfmpegCorThread(QThread):
                 if config["playlist"][i].__contains__("subtitleFile"):
                     if os.path.exists(config["playlist"][i]["subtitleFile"]):
                         if not self.processList[row].__contains__("subtitleFile") or not os.path.exists(self.processList[row]["subtitleFile"]):
-                            subName = "{}{}_{}{}".format("subs/", row, i, '')
+                            subName = os.path.join(self.subDir, "{}_{}{}".format(row, i, '')).replace('\\', '/')
                             if not os.path.exists(subName):
                                 modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
-                            self.processList[i]["subtitleFile"] = subName
+                            self.processList[row]["subtitleFile"] = subName
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
 
@@ -181,6 +186,7 @@ class FfmpegCorThread(QThread):
         inputs = {}
         outputs = {}
         globalputs = []
+        vfs = {}
 
         file = config["playlist"][config["current_index"]]["videoFile"]
 
@@ -208,16 +214,39 @@ class FfmpegCorThread(QThread):
                 inputs[self.processList[row]["subtitleFile"]] = None
             elif config["playlist"][config["current_index"]]["setting"]["subtitle"]["addMode"] == 1:
                 if subtitle.split('.')[-1].upper() == "SRT":
-                    outParams = outParams + ' -vf subtitles={}'.format(self.processList[row]["subtitleFile"])
+                    vfs["subtitles"] = self.processList[row]["subtitleFile"].replace("\\", "/")
+                    # outParams = outParams + ' -vf subtitles={}'.format(self.processList[row]["subtitleFile"].replace("\\", "/"))
                 elif subtitle.split('.')[-1].upper() == "ASS":
-                    outParams = outParams + ' -vf "ass={}"'.format(self.processList[row]["subtitleFile"])
+                    # outParams = outParams + ' -vf "ass={}"'.format(self.processList[row]["subtitleFile"].replace("\\", "/"))
+                    vfs["ass"] = self.processList[row]["subtitleFile"].replace("\\", "/")
 
         # outputs
         if config["playlist"][config["current_index"]].__contains__("outputs") \
                 and config["playlist"][config["current_index"]]["outputs"]:
             outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
 
+        # video setting
+        if config["playlist"][config["current_index"]].__contains__("setting") \
+            and config["playlist"][config["current_index"]]["setting"].__contains__("video") \
+                and config["playlist"][config["current_index"]]["setting"]["video"]:
+
+            # video scale
+            out = calcScale(config["playlist"][config["current_index"]])
+            if out:
+                # outParams = outParams + ' ' + out
+                vfs.update(out)
+
+            # video bitrate
+            if config["playlist"][config["current_index"]]["setting"]["video"].__contains__("bitrate"):
+                outParams = outParams + ' -b {}k'.format(config["playlist"][config["current_index"]]["setting"]["video"]["bitrate"])
+
         # out_video_format
+
+        vfsStr = ''
+        for (key, value) in vfs.items():
+            vfsStr += "{}={},".format(key, value)
+        if vfsStr:
+            outParams = outParams + " -vf " + vfsStr[:-1]
         if config["out_video_format"] == "MP4":
             outParams += ' -f mpeg4'
         elif config["out_video_format"] == "TS":

@@ -8,7 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202111121838"RUNTIMEENV = None
+VERSION = "v0.1.00"PackageTime = "202111161633"RUNTIMEENV = None
 LOGLEVEL = 2
 
 
@@ -31,9 +31,11 @@ TASKLIST_CONFIG = {
                 "videoFile": '',
                 "subtitleFile": '',
                 "setting": {
-                  "volume": ["dB", "12.1", "增大"],
+                  "audio": {coding: '', "volume": ["dB", "12.1", "增大"]},
+                  “video”: {"scale": '', "resolution": '', "bitrate": ''},
                   "subtitle": {"addMode": ''}
                 },
+                videoInfo:'',
                 "inputs": '',
                 "outputs": '',
                 "globalputs": '',
@@ -71,5 +73,7 @@ FFMPEG_ERRORS = [
     "Bitstream filter not found",
     "Invalid data found when processing input",
     "EBML header parsing failed",
+    "Error reading log file"
+    "'utf-8' codec can't decode byte 0xb3 in position 0: invalid start byte"
 
 ]

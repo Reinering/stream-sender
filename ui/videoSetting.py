@@ -65,7 +65,6 @@ class SettingDialog(QDialog, Ui_Dialog):
         #
         # if self.config.__contains__("globalputs") and self.config["globalputs"]:
         #     self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
-
         volume = getFileVolume(self.config["videoFile"])
         if volume:
             self.label_current_volume.setText(volume)
@@ -74,12 +73,16 @@ class SettingDialog(QDialog, Ui_Dialog):
             return
 
         # 音频设置
-        self.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
-        if '%' == self.config["setting"]["volume"][0]:
-            self.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
-        elif "dB" == self.config["setting"]["volume"][0]:
-            self.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
-            self.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
+        ## 编码设置
+
+
+        ## 音量设置
+        self.comboBox_volume_unit.setCurrentText(self.config["setting"]["audio"]["volume"][0])
+        if '%' == self.config["setting"]["audio"]["volume"][0]:
+            self.spinBox_volume_percent.setValue(self.config["setting"]["audio"]["volume"][1])
+        elif "dB" == self.config["setting"]["audio"]["volume"][0]:
+            self.doubleSpinBox_dB.setValue(self.config["setting"]["audio"]["volume"][1])
+            self.comboBox_dB_direction.setCurrentText(self.config["setting"]["audio"]["volume"][2])
 
         # 字幕设置
         if self.out_video_format == "TS" or self.out_video_format == "MP4":
@@ -96,6 +99,15 @@ class SettingDialog(QDialog, Ui_Dialog):
             if self.out_video_format == "TS" or self.out_video_format == "MP4":
                 self.comboBox_sub_addmode.setCurrentIndex(1)
 
+        # 视频设置
+
+        ## 图像设置
+        if self.config["setting"].__contains__("video"):
+            if self.config["setting"]["video"].__contains__("scale"):
+                self.comboBox_scale.setCurrentText(self.config["setting"]["video"]["scale"])
+            if self.config["setting"]["video"].__contains__("resolution"):
+                self.comboBox_resolution.setCurrentText(self.config["setting"]["video"]["resolution"])
+
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         try:
@@ -106,8 +118,8 @@ class SettingDialog(QDialog, Ui_Dialog):
     def setVolume(self, p0):
         if p0:
             self.label_current_volume.setText(p0)
-        if self.out_video_format == "TS" or self.out_video_format == "MP4":
-            self.comboBox_sub_addmode.setEnabled(False)
+        # if self.out_video_format == "TS" or self.out_video_format == "MP4":
+        #     self.comboBox_sub_addmode.setEnabled(False)
 
     @pyqtSlot()
     def on_pushButton_sub_add_clicked(self):
@@ -161,12 +173,50 @@ class SettingDialog(QDialog, Ui_Dialog):
             self.config["setting"] = {}
 
         # 视频设置
+        if not self.config["setting"].__contains__("video"):
+            self.config["setting"]["video"] = {}
+
+        ## 码率
+        if self.checkBox_video_bitrate.isChecked():
+            self.config["setting"]["video"]["bitrate"] = self.spinBox_video_bitrate.value()
+        else:
+            if self.config["setting"]["video"].__contains__("bitrate"):
+                self.config["setting"]["video"].pop("bitrate")
+
+        ## 图像尺寸 scale
+        scale = self.comboBox_scale.currentText()
+
+        if scale == "原始":
+            if self.config["setting"]["video"].__contains__("scale"):
+                self.config["setting"]["video"].pop("scale")
+        else:
+            self.config["setting"]["video"]["scale"] = scale
+
+        # 图像分辨率 resolution
+        resolution = self.comboBox_resolution.currentText()
+        if resolution == "原始":
+            if self.config["setting"]["video"].__contains__("resolution"):
+                self.config["setting"]["video"].pop("resolution")
+        else:
+            self.config["setting"]["video"]["resolution"] = resolution
 
         # 音频设置
-        self.config["setting"]["volume"] = [self.comboBox_volume_unit.currentText()]
+        if not self.config["setting"].__contains__("audio"):
+            self.config["setting"]["audio"] = {}
+        ## 音频编码
+        audioCoding = self.comboBox_audioCoding.currentText()
+        if audioCoding == "原始":
+            if self.config["setting"]["audio"].__contains__("coding"):
+                self.config["setting"]["audio"].pop("coding")
+        else:
+            self.config["setting"]["audio"]["coding"] = audioCoding
+            if outputs:
+                outputs = outputs.replace("-c copy", "-vcodec copy").replace("-acodec copy", "") + ' -acodec ' + audioCoding.lower() + ' '
+        ## 音量设置
+        self.config["setting"]["audio"]["volume"] = [self.comboBox_volume_unit.currentText()]
         if "%" in self.comboBox_volume_unit.currentText():
             volume = self.spinBox_volume_percent.value()
-            self.config["setting"]["volume"].append(volume)
+            self.config["setting"]["audio"]["volume"].append(volume)
             if 100 != self.spinBox_volume_percent.value():
                 volume = '-filter:a "volume={}"'.format(str(volume/100))
                 if outputs:
@@ -175,8 +225,8 @@ class SettingDialog(QDialog, Ui_Dialog):
                     outputs = volume
         elif "dB" == self.comboBox_volume_unit.currentText():
             volume = self.doubleSpinBox_dB.value()
-            self.config["setting"]["volume"].append(volume)
-            self.config["setting"]["volume"].append(self.comboBox_dB_direction.currentText())
+            self.config["setting"]["audio"]["volume"].append(volume)
+            self.config["setting"]["audio"]["volume"].append(self.comboBox_dB_direction.currentText())
 
             if 0.00 != self.doubleSpinBox_dB.value():
                 if "增大" == self.comboBox_dB_direction.currentText():
@@ -212,6 +262,17 @@ class SettingDialog(QDialog, Ui_Dialog):
         time.sleep(1)
         self.close()
     
+    @pyqtSlot(bool)
+    def on_checkBox_video_bitrate_clicked(self, checked):
+        """
+        Slot documentation goes here.
+        
+        @param checked DESCRIPTION
+        @type bool
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.spinBox_video_bitrate.setEnabled(checked)
 
 
 
@@ -258,12 +319,19 @@ class InitWidgetThread(QThread):
         if self.config.__contains__("setting") and self.config["setting"]:
 
             # 音频设置
-            self.mainWindow.comboBox_volume_unit.setCurrentText(self.config["setting"]["volume"][0])
-            if '%' == self.config["setting"]["volume"][0]:
-                self.mainWindow.spinBox_volume_percent.setValue(self.config["setting"]["volume"][1])
-            elif "dB" == self.config["setting"]["volume"][0]:
-                self.mainWindow.doubleSpinBox_dB.setValue(self.config["setting"]["volume"][1])
-                self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["volume"][2])
+            if self.config["setting"].__contains__("audio") and self.config["setting"]["audio"]:
+                ## 编码设置
+                if self.config["setting"]["audio"].__contains__("coding") and self.config["setting"]["audio"]["coding"]:
+                    self.mainWindow.comboBox_audioCoding.setCurrentText(self.config["setting"]["audio"]["coding"])
+
+                ## 音量设置
+                if self.config["setting"]["audio"].__contains__("volume") and self.config["setting"]["audio"]["volume"]:
+                    self.mainWindow.comboBox_volume_unit.setCurrentText(self.config["setting"]["audio"]["volume"][0])
+                    if '%' == self.config["setting"]["audio"]["volume"][0]:
+                        self.mainWindow.spinBox_volume_percent.setValue(self.config["setting"]["audio"]["volume"][1])
+                    elif "dB" == self.config["setting"]["audio"]["volume"][0]:
+                        self.mainWindow.doubleSpinBox_dB.setValue(self.config["setting"]["audio"]["volume"][1])
+                        self.mainWindow.comboBox_dB_direction.setCurrentText(self.config["setting"]["audio"]["volume"][2])
 
             # 字幕设置
             if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
@@ -276,6 +344,19 @@ class InitWidgetThread(QThread):
             else:
                 if self.out_video_format == "TS" or self.out_video_format == "MP4":
                     self.mainWindow.comboBox_sub_addmode.setCurrentIndex(1)
+
+            # 视频设置
+            if self.config["setting"].__contains__("video"):
+                ## 码率
+                if self.config["setting"]["video"].__contains__("bitrate"):
+                    self.mainWindow.checkBox_video_bitrate.setChecked(True)
+                    self.mainWindow.spinBox_video_bitrate.setEnabled(True)
+                    self.mainWindow.spinBox_video_bitrate.setValue(self.config["setting"]["video"]["bitrate"])
+                ## 图像设置
+                if self.config["setting"]["video"].__contains__("scale"):
+                    self.mainWindow.comboBox_scale.setCurrentText(self.config["setting"]["video"]["scale"])
+                if self.config["setting"]["video"].__contains__("resolution"):
+                    self.mainWindow.comboBox_resolution.setCurrentText(self.config["setting"]["video"]["resolution"])
 
         self.mainWindow.pushButton_ok.setEnabled(True)
 

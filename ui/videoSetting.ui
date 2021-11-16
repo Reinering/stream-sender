@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>390</width>
-    <height>343</height>
+    <width>392</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -45,164 +45,27 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>4</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
          <string>视频设置</string>
         </attribute>
-        <layout class="QGridLayout" name="gridLayout_9">
-         <property name="leftMargin">
-          <number>3</number>
-         </property>
-         <property name="rightMargin">
-          <number>3</number>
-         </property>
-         <property name="bottomMargin">
-          <number>3</number>
-         </property>
-         <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="title">
-            <string>视频</string>
+        <layout class="QGridLayout" name="gridLayout_10">
+         <item row="4" column="0">
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-           <layout class="QGridLayout" name="gridLayout_8">
-            <property name="leftMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>3</number>
-            </property>
-            <property name="bottomMargin">
-             <number>3</number>
-            </property>
-            <item row="0" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                    <pointsize>8</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>视频编码</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="comboBox">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                   </font>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>原始</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_9">
-                <item>
-                 <widget class="QLabel" name="label_8">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                    <pointsize>8</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>帧数</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="comboBox_2">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                   </font>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>原始</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_14">
-                <item>
-                 <widget class="QLabel" name="label_10">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                    <pointsize>8</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>码率</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QComboBox" name="comboBox_4">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                   </font>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>原始</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_11">
-                  <property name="font">
-                   <font>
-                    <family>微软雅黑</family>
-                    <pointsize>8</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>kbps</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_4">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>135</height>
+            </size>
+           </property>
+          </spacer>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QGroupBox" name="groupBox_3">
            <property name="title">
             <string>图像</string>
@@ -235,7 +98,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QComboBox" name="comboBox_5">
+                 <widget class="QComboBox" name="comboBox_scale">
                   <property name="font">
                    <font>
                     <family>微软雅黑</family>
@@ -276,7 +139,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QComboBox" name="comboBox_6">
+                 <widget class="QComboBox" name="comboBox_resolution">
                   <property name="font">
                    <font>
                     <family>微软雅黑</family>
@@ -289,12 +152,17 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>1080P</string>
+                    <string>4K</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>1080i</string>
+                    <string>2K</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>1080P</string>
                    </property>
                   </item>
                   <item>
@@ -329,18 +197,234 @@
            </layout>
           </widget>
          </item>
-         <item row="2" column="0">
-          <spacer name="verticalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="title">
+            <string>视频</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>135</height>
-            </size>
+           <layout class="QGridLayout" name="gridLayout_8">
+            <property name="leftMargin">
+             <number>3</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <property name="bottomMargin">
+             <number>3</number>
+            </property>
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="label_7">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>编码格式</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                   </font>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>原始</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>H264</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>H265</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>MPEG4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>MPEG2VIDEO</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PCM</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>FLV1</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_25"/>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_14">
+                <item>
+                 <widget class="QLabel" name="label_8">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>帧数</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="comboBox_2">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                   </font>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>原始</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>60</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_24">
+                <item>
+                 <widget class="QCheckBox" name="checkBox_video_bitrate">
+                  <property name="text">
+                   <string>码率</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="spinBox_video_bitrate">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="minimum">
+                   <number>100</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100000</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_11">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>kbps</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_19">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QGroupBox" name="groupBox_5">
+           <property name="title">
+            <string>封装</string>
            </property>
-          </spacer>
+           <layout class="QGridLayout" name="gridLayout_9">
+            <property name="leftMargin">
+             <number>3</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <property name="bottomMargin">
+             <number>3</number>
+            </property>
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="horizontalLayout_23">
+              <item>
+               <spacer name="horizontalSpacer_18">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -382,7 +466,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="comboBox_3">
+              <widget class="QComboBox" name="comboBox_audioCoding">
                <property name="font">
                 <font>
                  <family>微软雅黑</family>
@@ -391,6 +475,16 @@
                <item>
                 <property name="text">
                  <string>原始</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>AAC</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>AC3</string>
                 </property>
                </item>
               </widget>
@@ -600,18 +694,54 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item row="2" column="0">
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>245</height>
-            </size>
-           </property>
-          </spacer>
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_16">
+           <item>
+            <widget class="QLabel" name="label_13">
+             <property name="font">
+              <font>
+               <family>微软雅黑</family>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>添加方式</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_sub_addmode">
+             <property name="font">
+              <font>
+               <family>微软雅黑</family>
+              </font>
+             </property>
+             <item>
+              <property name="text">
+               <string>嵌入容器</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>嵌入视频流</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_13">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
          <item row="1" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout">
@@ -682,54 +812,21 @@
            </item>
           </layout>
          </item>
-         <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_16">
-           <item>
-            <widget class="QLabel" name="label_13">
-             <property name="font">
-              <font>
-               <family>微软雅黑</family>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>添加方式</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBox_sub_addmode">
-             <property name="font">
-              <font>
-               <family>微软雅黑</family>
-              </font>
-             </property>
-             <item>
-              <property name="text">
-               <string>嵌入容器</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>嵌入视频流</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_13">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+         <item row="3" column="0">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>245</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="0">
+          <widget class="QListWidget" name="listWidget"/>
          </item>
         </layout>
        </widget>

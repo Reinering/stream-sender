@@ -104,8 +104,8 @@ class FfmpegCorThread(QThread):
             print(e)
 
     def addCoroutine(self, row, CONFIG):
-        self.row = row
-        self.config = CONFIG
+        # self.row = row
+        # self.config = CONFIG
         if self.processList.__contains__(row):
             self.processList[row]["stopBool"] = False
             self.processList[row]["stopCode"] = 0
@@ -126,13 +126,13 @@ class FfmpegCorThread(QThread):
                 self.signal_state.emit((row, config["playlist"][i]["videoFile"].split('/')[-1]))
 
                 # subtitle file
+
                 if config["playlist"][i].__contains__("subtitleFile"):
                     if os.path.exists(config["playlist"][i]["subtitleFile"]):
-                        if not self.processList[row].__contains__("subtitleFile") or not os.path.exists(self.processList[row]["subtitleFile"]):
-                            subName = os.path.join(self.subDir, "{}_{}{}".format(row, i, '')).replace('\\', '/')
-                            if not os.path.exists(subName):
-                                modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
-                            self.processList[row]["subtitleFile"] = subName
+                        subName = os.path.join(self.subDir, "{}_{}{}".format(row, i, '')).replace('\\', '/')
+                        if not os.path.exists(subName):
+                            modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
+                        self.processList[row]["subtitleFile"] = subName
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
 
@@ -149,7 +149,7 @@ class FfmpegCorThread(QThread):
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
-                        print(line, file=sys.stderr)
+                        # print(line, file=sys.stderr)
                         if not line:
                             continue
                         line = str(line)
@@ -167,7 +167,10 @@ class FfmpegCorThread(QThread):
                         if self.processList[row]["mvCode"]:
                             i += 1
                         else:
-                            i -= 1
+                            if i == 0:
+                                i = len(config["playlist"]) - 1
+                            else:
+                                i -= 1
                     else:
                         i += 1
                         if not loopBool:

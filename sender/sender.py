@@ -44,7 +44,6 @@ class FfmpegCorThread(QThread):
                 self.stopCoroutine(key)
             self.processList.clear()
             self.loop.stop()
-            shutil.rmtree("subs")
         except Exception as e:
             print(e)
 

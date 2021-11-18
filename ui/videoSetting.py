@@ -135,8 +135,19 @@ class SettingDialog(QDialog, Ui_Dialog):
                                                  "subtitle Files(*.ass)")
             if file[0]:
                 self.label_sub.setText(file[0])
+                self.pushButton_sub_del.setEnabled(True)
         except Exception as e:
             print(e)
+
+    @pyqtSlot()
+    def on_pushButton_sub_del_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.label_sub.clear()
+        self.pushButton_sub_del.setEnabled(False)
 
     @pyqtSlot(str)
     def on_comboBox_volume_unit_currentTextChanged(self, p0):
@@ -156,6 +167,18 @@ class SettingDialog(QDialog, Ui_Dialog):
             self.spinBox_volume_percent.setHidden(True)
             self.doubleSpinBox_dB.setHidden(False)
             self.comboBox_dB_direction.setHidden(False)
+
+    @pyqtSlot(bool)
+    def on_checkBox_video_bitrate_clicked(self, checked):
+        """
+        Slot documentation goes here.
+
+        @param checked DESCRIPTION
+        @type bool
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.spinBox_video_bitrate.setEnabled(checked)
 
     @pyqtSlot()
     def on_pushButton_ok_clicked(self):
@@ -248,6 +271,10 @@ class SettingDialog(QDialog, Ui_Dialog):
             self.config["setting"]["subtitle"]["addMode"] = self.comboBox_sub_addmode.currentIndex()
             if outputs:
                 outputs = outputs.replace("-c copy", "-acodec copy").replace("-vcodec copy", "")
+        else:
+            if self.config.__contains__("subtitleFile"):
+                self.config.pop("subtitleFile")
+                self.config["setting"].pop("subtitle")
 
         # 其他设置
 
@@ -262,17 +289,8 @@ class SettingDialog(QDialog, Ui_Dialog):
         time.sleep(1)
         self.close()
     
-    @pyqtSlot(bool)
-    def on_checkBox_video_bitrate_clicked(self, checked):
-        """
-        Slot documentation goes here.
-        
-        @param checked DESCRIPTION
-        @type bool
-        """
-        # TODO: not implemented yet
-        # raise NotImplementedError
-        self.spinBox_video_bitrate.setEnabled(checked)
+
+
 
 
 
@@ -336,6 +354,7 @@ class InitWidgetThread(QThread):
             # 字幕设置
             if self.config.__contains__("subtitleFile") and self.config["subtitleFile"]:
                 self.mainWindow.label_sub.setText(self.config["subtitleFile"])
+                self.mainWindow.pushButton_sub_del.setEnabled(True)
                 if self.config["setting"].__contains__("subtitle"):
                     if self.config["setting"]["subtitle"].__contains__("addMode"):
                         self.mainWindow.comboBox_sub_addmode.setCurrentIndex(self.config["setting"]["subtitle"]["addMode"])

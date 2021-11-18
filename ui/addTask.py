@@ -258,6 +258,8 @@ class addTask(QDialog, Ui_addTask):
         if isinstance(p0, tuple):
             if self.taskInfo["playlist"][p0[0]].__contains__("subtitleFile") and self.taskInfo["playlist"][p0[0]]["subtitleFile"]:
                 self.tableWidget.item(p0[0], 1).setText(self.taskInfo["playlist"][p0[0]]["subtitleFile"])
+            else:
+                self.tableWidget.item(p0[0], 1).setText('')
 
             params = ''
             if self.taskInfo["playlist"][p0[0]].__contains__("inputs") \

@@ -14,7 +14,7 @@ import sys
 import os
 import logging
 
-from manage import ROOT_PATH, BUNDLE_DIR
+from manage import LOGLEVEL
 from utils.file import modifyFileCode
 from utils.video import calcScale, checkOutputErr
 
@@ -99,7 +99,7 @@ class FfmpegCorThread(QThread):
                                   stderr=subprocess.PIPE,
                                   shell=True)
             out = str(pp.stdout.read(), encoding="utf-8")
-            print('out:', out)
+            logging.debug('out: {}'.format(out))
         except Exception as e:
             print(e)
 
@@ -149,6 +149,7 @@ class FfmpegCorThread(QThread):
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
+                        logging.debug(line)
                         # print(line, file=sys.stderr)
                         if not line:
                             continue
@@ -256,11 +257,15 @@ class FfmpegCorThread(QThread):
             outParams += ' -f mpegts'
 
         # globalputs
+        ## log 控制
+        # if LOGLEVEL <= 2:
+        #     globalputs.append("-loglevel quiet")
         if config["playlist"][config["current_index"]].__contains__("globalputs") \
                 and config["playlist"][config["current_index"]]["globalputs"]:
             globalputs.append(config["playlist"][config["current_index"]]["globalputs"])
-        else:
+        if not globalputs:
             globalputs = None
+
 
         inputs[file] = inParams
         outputs[outurl] = outParams
@@ -268,5 +273,5 @@ class FfmpegCorThread(QThread):
         ff = ffmpy3.FFmpeg(inputs=inputs,
                            outputs=outputs,
                            global_options=globalputs)
-        print("cmd: ", ff.cmd, '\n')
+        logging.info("cmd: {}".format(ff.cmd))
         return ff

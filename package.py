@@ -105,8 +105,11 @@ def overrideSetting(file, now):
                     line = "Computer_Digits = \"" + str(Computer_Digits) + '\"\r'
                 elif "PackageTime = " in line:
                     line = "PackageTime = \"" + now + '\"\r'
-                elif "TYPENUM = " in line:
-                    line = "TYPENUM = " + str(TypeNum) + '\r'
+                elif "LOGLEVEL = " in line:
+                    if TypeNum <= 2:
+                        line = "LOGLEVEL = 4" + '\r'
+                    else:
+                        line = "LOGLEVEL = 2" + '\r'
                 elif "CURRENT_DB = " in line:
                     if TypeNum < 4:
                         line = "CURRENT_DB = \"test\"" + '\r'
@@ -235,6 +238,6 @@ if __name__ == "__main__":
     PackageArgs['distpath'] = r'G:\PythonAPP_Package\Stream_Sender'
 
     TypeNum = 4
-    packaging()
+    # packaging()
     TypeNum = 2
     packaging()

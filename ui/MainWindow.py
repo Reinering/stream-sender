@@ -12,6 +12,7 @@ import decimal
 import simplejson
 import copy
 import os
+import shutil
 import logging
 
 from manage import TASKLIST_CONFIG, BUNDLE_DIR, RUNTIMEENV
@@ -104,7 +105,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.configPath:
             self.saveConfig(self.configPath)
             QMessageBox.information(self, "提示", "文件已保存")
-        else:
+        elif TASKLIST_CONFIG:
             self.on_action_saveas_triggered()
 
     @pyqtSlot()
@@ -114,14 +115,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
-        filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
-        if not filePath[0]:
-            return
+        if TASKLIST_CONFIG:
+            filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
+            if not filePath[0]:
+                return
 
-        self.saveConfig(filePath[0])
+            self.saveConfig(filePath[0])
 
-        self.configPath = filePath[0]
-        QMessageBox.information(self, "提示", "文件已保存")
+            self.configPath = filePath[0]
+            QMessageBox.information(self, "提示", "文件已保存")
 
     @pyqtSlot()
     def on_action_ffmpeg_help_triggered(self):
@@ -156,7 +158,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
         if RUNTIMEENV == "pyinstaller" and os.path.exists(self.subDir):
-            os.remove(self.subDir)
+            shutil.rmtree(self.subDir)
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):
@@ -290,7 +292,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.ffTh.addCoroutine(i, config)
 
     def setTaskState(self, p0):
-        print(p0)
+        logging.info(p0)
         try:
             config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
         except Exception as e:

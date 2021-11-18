@@ -51,7 +51,7 @@ def listDirFile(dir):
         if os.path.isdir(filepath):
             listDirFile(filepath)
         else:
-            print(line)
+            # print(line)
             converCode(filepath)
 
 

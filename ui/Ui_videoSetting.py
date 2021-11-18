@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\git\stream\stream_sender\ui\videoSetting.ui'
+# Form implementation generated from reading ui file 'F:\git\streamer\streamer-sender\ui\videoSetting.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -322,15 +322,17 @@ class Ui_Dialog(object):
         self.label_sub.setWordWrap(True)
         self.label_sub.setObjectName("label_sub")
         self.horizontalLayout_12.addWidget(self.label_sub)
+        self.pushButton_sub_del = QtWidgets.QPushButton(self.tab_4)
+        self.pushButton_sub_del.setEnabled(False)
+        self.pushButton_sub_del.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.pushButton_sub_del.setObjectName("pushButton_sub_del")
+        self.horizontalLayout_12.addWidget(self.pushButton_sub_del)
         self.horizontalLayout.addLayout(self.horizontalLayout_12)
         spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem10)
         self.gridLayout_4.addLayout(self.horizontalLayout, 1, 0, 1, 1)
         spacerItem11 = QtWidgets.QSpacerItem(20, 245, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout_4.addItem(spacerItem11, 3, 0, 1, 1)
-        self.listWidget = QtWidgets.QListWidget(self.tab_4)
-        self.listWidget.setObjectName("listWidget")
-        self.gridLayout_4.addWidget(self.listWidget, 2, 0, 1, 1)
+        self.gridLayout_4.addItem(spacerItem11, 2, 0, 1, 1)
         self.tabWidget.addTab(self.tab_4, "")
         self.tab_5 = QtWidgets.QWidget()
         self.tab_5.setObjectName("tab_5")
@@ -457,7 +459,7 @@ class Ui_Dialog(object):
         self.gridLayout_3.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -511,6 +513,7 @@ class Ui_Dialog(object):
         self.comboBox_sub_addmode.setItemText(1, _translate("Dialog", "嵌入视频流"))
         self.label.setText(_translate("Dialog", "字幕文件"))
         self.pushButton_sub_add.setText(_translate("Dialog", "添加"))
+        self.pushButton_sub_del.setText(_translate("Dialog", "删除"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "字幕设置"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("Dialog", "其他设置"))
         self.groupBox_2.setTitle(_translate("Dialog", "参数设置"))

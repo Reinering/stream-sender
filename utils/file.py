@@ -9,14 +9,14 @@ import os
 
 
 def modifyFileCode(oldfile, newfile, code):
-
-    with open(oldfile, 'rb') as f:
-        filecontent = f.read()
-    result = strJudgeCode(filecontent)
-    result = filecontent.decode(encoding=result["encoding"])
-    with open(newfile, 'w', encoding=code) as f:
-        f.write(result)
-        f.flush()
+    with open(oldfile, 'r') as f:
+        content = f.read()
+        # result = strJudgeCode(content)
+        # result = content.decode(encoding=result["encoding"])
+        with open(newfile, 'w', encoding=code) as f1:
+            # f1.write(result)
+            f1.write(content)
+            f1.flush()
 
 def strJudgeCode(str):
     return chardet.detect(str)
@@ -59,4 +59,6 @@ def listDirFile(dir):
 
 
 if __name__ == '__main__':
-    listDirFile(u'.\TRMD')
+    # listDirFile(u'.\TRMD')
+
+    modifyFileCode("../subs/NowOur-stafd.srt", "../subs/1_1", "utf-8")

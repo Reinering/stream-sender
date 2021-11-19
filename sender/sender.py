@@ -125,16 +125,20 @@ class FfmpegCorThread(QThread):
                 self.signal_state.emit((row, config["playlist"][i]["videoFile"].split('/')[-1]))
 
                 # subtitle file
-
                 if config["playlist"][i].__contains__("subtitleFile"):
                     if os.path.exists(config["playlist"][i]["subtitleFile"]):
                         subName = os.path.join(self.subDir, "{}_{}{}".format(row, i, '')).replace('\\', '/')
                         if not os.path.exists(subName):
-                            modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
-                        self.processList[row]["subtitleFile"] = subName
+                            try:
+                                modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
+                                self.processList[row]["subtitleFile"] = subName
+                            except Exception as e:
+                                self.processList[row]["subtitleFile"] = config["playlist"][i]["subtitleFile"]
+                                print("字幕编码修改失败, 使用原字幕", config["playlist"][i]["subtitleFile"])
+                        else:
+                            self.processList[row]["subtitleFile"] = subName
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
-
                 ff = self.createFFmpy3(row, config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row]["ff"] = ff

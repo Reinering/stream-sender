@@ -214,6 +214,8 @@ class SettingDialog(QDialog, Ui_Dialog):
                 self.config["setting"]["video"].pop("scale")
         else:
             self.config["setting"]["video"]["scale"] = scale
+            if outputs:
+                outputs = outputs.replace("-c copy", "-acodec copy").replace("-vcodec copy", "")
 
         # 图像分辨率 resolution
         resolution = self.comboBox_resolution.currentText()
@@ -222,6 +224,8 @@ class SettingDialog(QDialog, Ui_Dialog):
                 self.config["setting"]["video"].pop("resolution")
         else:
             self.config["setting"]["video"]["resolution"] = resolution
+            if outputs:
+                outputs = outputs.replace("-c copy", "-acodec copy").replace("-vcodec copy", "")
 
         # 音频设置
         if not self.config["setting"].__contains__("audio"):

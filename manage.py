@@ -8,7 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202111191111"RUNTIMEENV = None
+VERSION = "v0.1.00"PackageTime = "202111191656"RUNTIMEENV = None
 LOGLEVEL = 4
 
 
@@ -74,5 +74,4 @@ FFMPEG_ERRORS = [
     "EBML header parsing failed",
     "Error reading log file"
     "'utf-8' codec can't decode byte 0xb3 in position 0: invalid start byte"
-
 ]

@@ -81,10 +81,11 @@ def calcScale(config):
     # return "-vf scale={}x{},pad={}:{}:{}:{}:black".format(int(out[0] - out[2]), int(out[1] - out[3]), int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
     if out:
         result = {}
-        if out[0] != width or out[1] != height:
-            result["scale"] = "{}x{}".format(int(out[0] - out[2]), int(out[1] - out[3]))
+        if int(out[0] - out[2]) != width or int(out[1] - out[3]) != height:
+            result["scale"] = "{}x{}".format(int(out[0]), int(out[1]))
+            # result["scale"] = "{}x{}".format(int(out[0]), int(out[1]))
         if out[2] != 0 or out[3] != 0:
-            result["pad"] = "{}:{}:{}:{}:black".format(int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
+            result["pad"] = "{}:{}:{}:{}:black".format(int(out[0] + out[2]), int(out[1] + out[3]), int(out[2]/2), int(out[3]/2))
 
         if result:
             return result
@@ -97,21 +98,58 @@ def calcScale(config):
 
 if __name__ == "__main__":
 
-    config = {
-        "setting": {
-            "video": {
-                "scale": "16:9",
-                "resolution": "1080P"
+    configs = [
+        {
+            "setting": {
+                "video": {
+                    "scale": "16:9",
+                    # "resolution": "1080P"
+                }
+            },
+            "videoInfo": {
+                "streams": [
+                    {
+                        "coded_width": 1920,
+                        "coded_height": 804,
+                    }
+                ]
             }
         },
-        "videoInfo": {
-            "streams": [
-                {
-                    "coded_width": 1920,
-                    "coded_height": 804,
+        {
+            "setting": {
+                "video": {
+                    "scale": "16:9",
+                    # "resolution": "1080P"
                 }
-            ]
+            },
+            "videoInfo": {
+                "streams": [
+                    {
+                        "coded_width": 1920,
+                        "coded_height": 1040,
+                    }
+                ]
+            }
+        },
+        {
+            "setting": {
+                "video": {
+                    "scale": "16:9",
+                    # "resolution": "1080P"
+                }
+            },
+            "videoInfo": {
+                "streams": [
+                    {
+                        "coded_width": 1920,
+                        "coded_height": 1080,
+                    }
+                ]
+            }
         }
-    }
-    print(calcScale(config))
+    ]
+
+
+    for config in configs:
+        print(calcScale(config))
 

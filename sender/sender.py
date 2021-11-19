@@ -152,8 +152,7 @@ class FfmpegCorThread(QThread):
                     line_buf.extend(in_buf)
                     while b'\n' in line_buf:
                         line, _, line_buf = line_buf.partition(b'\n')
-                        logging.debug(line)
-                        # print(line, file=sys.stderr)
+                        print(line, file=sys.stderr)
                         if not line:
                             continue
                         line = str(line)

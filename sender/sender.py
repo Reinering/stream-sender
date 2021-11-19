@@ -134,7 +134,7 @@ class FfmpegCorThread(QThread):
                                 self.processList[row]["subtitleFile"] = subName
                             except Exception as e:
                                 self.processList[row]["subtitleFile"] = config["playlist"][i]["subtitleFile"]
-                                print("字幕编码修改失败, 使用原字幕", config["playlist"][i]["subtitleFile"])
+                                print(e, "字幕编码修改失败, 使用原字幕", config["playlist"][i]["subtitleFile"])
                         else:
                             self.processList[row]["subtitleFile"] = subName
                     else:

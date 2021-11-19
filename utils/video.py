@@ -77,11 +77,19 @@ def calcScale(config):
             else:
                 scale = heightTmp / height
                 out = [width * scale, heightTmp, 0, 0]
+
+    # return "-vf scale={}x{},pad={}:{}:{}:{}:black".format(int(out[0] - out[2]), int(out[1] - out[3]), int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
     if out:
-        # return "-vf scale={}x{},pad={}:{}:{}:{}:black".format(int(out[0] - out[2]), int(out[1] - out[3]), int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
-        return {"scale": "{}x{}".format(int(out[0] - out[2]), int(out[1] - out[3])),
-                "pad": "{}:{}:{}:{}:black".format(int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
-                }
+        result = {}
+        if out[0] != width or out[1] != height:
+            result["scale"] = "{}x{}".format(int(out[0] - out[2]), int(out[1] - out[3]))
+        if out[2] != 0 or out[3] != 0:
+            result["pad"] = "{}:{}:{}:{}:black".format(int(out[0]), int(out[1]), int(out[2]/2), int(out[3]/2))
+
+        if result:
+            return result
+        else:
+            return
     else:
         return
 

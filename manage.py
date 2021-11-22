@@ -8,8 +8,11 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202111191656"RUNTIMEENV = None
-LOGLEVEL = 4
+VERSION = "v0.1.00"
+PackageTime = "202111191656"
+RUNTIMEENV = None
+LOGLEVEL = 4
+
 
 
 ROOT_PATH = os.getcwd()
@@ -30,14 +33,14 @@ TASKLIST_CONFIG = {
                 "videoFile": '',
                 "subtitleFile": '',
                 "setting": {
-                  "audio": {coding: '', "volume": ["dB", "12.1", "增大"]},
-                  “video”: {"scale": '', "resolution": '', "bitrate": ''},
+                  "audio": {"coding": '', "volume": ["dB", "12.1", "增大"]},
+                  "video": {"scale": '', "resolution": '', "bitrate": ''},
                   "subtitle": {"addMode": ''}
                 },
                 videoInfo:'',
                 "inputs": '',
                 "outputs": '',
-                "globalputs": '',
+                "globalputs": ''
                 
             }
         ],
@@ -53,6 +56,28 @@ TASKLIST_CONFIG = {
     }
 }
 """
+
+playConfig = {
+    "streams": [
+        {
+            "info": '',
+            "": ''
+        }
+    ],
+    "videoFile": '',
+    "subtitleFile": '',
+    "setting": {
+        "audio": {"coding": '', "volume": ["dB", "12.1", "增大"]},
+        "video": {"scale": '', "resolution": '', "bitrate": ''},
+        "subtitle": {"addMode": ''}
+    },
+    "videoInfo": '',
+    "inputs": '',
+    "outputs": '',
+    "globalputs": '',
+    "type": "2"
+}
+
 
 # ffmpeg config
 FFMPEG_OPTIONS_DEFAULT = {

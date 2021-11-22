@@ -20,6 +20,7 @@ class Ui_Dialog(object):
         Dialog.setFont(font)
         Dialog.setSizeGripEnabled(True)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
+        self.gridLayout.setContentsMargins(3, 9, 3, 3)
         self.gridLayout.setObjectName("gridLayout")
         self.tabWidget = QtWidgets.QTabWidget(Dialog)
         self.tabWidget.setObjectName("tabWidget")
@@ -92,7 +93,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "创建及高级设置"))
+        Dialog.setWindowTitle(_translate("Dialog", "创建与高级设置"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Tab 1"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Tab 2"))
         item = self.tableWidget.horizontalHeaderItem(0)

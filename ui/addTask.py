@@ -39,13 +39,44 @@ class addTask(QDialog, Ui_addTask):
         super(addTask, self).__init__(parent)
         self.setupUi(self)
         self.translate = QtCore.QCoreApplication.translate
+        self.rex_ip = [
+            r'^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$',
+            r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$'
+        ]
         self.videoFormat = ".ts"
+        self.ipType = "ipv4"
         self.row = None
         self.key = None
         self.taskInfo = {"playlist": []}
         self.on_pushButton_refresh_clicked()
         self.action = "new"
-        self.key
+
+        self.dstIpList = (
+            (
+                "238.1.238.1",
+                "238.1.238.2",
+                "238.1.238.3",
+                "238.1.238.4",
+                "238.1.238.5",
+                "238.1.238.6",
+                "238.1.238.7",
+                "238.1.238.8",
+                "238.1.238.9",
+                "238.1.238.10"
+            ),
+            (
+                "FE15::101:101",
+                "FE15::101:102",
+                "FE15::101:103",
+                "FE15::101:104",
+                "FE15::101:105",
+                "FE15::101:106",
+                "FE15::101:107",
+                "FE15::101:108",
+                "FE15::101:109",
+                "FE15::101:110",
+            )
+        )
 
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableWidget.setColumnWidth(0, 300)
@@ -88,6 +119,7 @@ class addTask(QDialog, Ui_addTask):
         self.comboBox_ip.setCurrentText(TASKLIST_CONFIG[key]["src_ip"])
         self.comboBox_sendMode.setCurrentText(TASKLIST_CONFIG[key]["send_mode"])
         self.comboBox_protocol.setCurrentText(TASKLIST_CONFIG[key]["protocol"])
+        self.comboBox_ipType.setCurrentText(TASKLIST_CONFIG[key]["ipType"])
         self.comboBox_dst_ip.setCurrentText(TASKLIST_CONFIG[key]["dst_ip"])
         self.spinBox_port.setValue(int(TASKLIST_CONFIG[key]["dst_port"]))
         self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
@@ -115,6 +147,7 @@ class addTask(QDialog, Ui_addTask):
             self.comboBox_ip.setEnabled(False)
             self.pushButton_refresh.setEnabled(False)
             self.comboBox_protocol.setEnabled(False)
+            self.comboBox_ipType.setEnabled(False)
             self.comboBox_dst_ip.setEnabled(False)
             self.spinBox_port.setEnabled(False)
             self.comboBox_videoFormat.setEnabled(False)
@@ -326,17 +359,21 @@ class addTask(QDialog, Ui_addTask):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
+
         addrs = socket.getaddrinfo(socket.gethostname(), None)
         i = 0
         for addr in addrs:
             ipAddr = addr[-1][0]
-            ipv4 = re.findall(r"\d+\.\d+\.\d+\.\d+", ipAddr)
-            if len(ipv4) == 0 or not ipv4[0]:
+            if self.ipType == "ipv4":
+                result = re.match(self.rex_ip[0], ipAddr)
+            elif self.ipType == "ipv6":
+                result = re.match(self.rex_ip[1], ipAddr)
+            if not result:
                 continue
             self.comboBox_ip.addItem("")
-            self.comboBox_ip.setItemText(i, self.translate("MainWindow", ipv4[0]))
+            self.comboBox_ip.setItemText(i, self.translate("MainWindow", ipAddr))
             i += 1
-    
+
     @pyqtSlot(int, int)
     def on_tableWidget_cellDoubleClicked(self, row, column):
         """
@@ -376,11 +413,13 @@ class addTask(QDialog, Ui_addTask):
         if not protocol:
             return
 
+        ipType = self.comboBox_ipType.currentText().lower()
+
         dst_ip = self.comboBox_dst_ip.currentText()
         if not dst_ip:
             QMessageBox.critical(self, "错误", "组播地址不能为空")
             return
-        if not re.match(r'^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$', dst_ip):
+        if self.ipType == "ipv4" and not re.match(self.rex_ip[0], dst_ip) or self.ipType == "ipv6" and not re.match(self.rex_ip[1], dst_ip):
             QMessageBox.critical(self, "错误", "IP地址格式错误，请重新输入")
             return
 
@@ -402,6 +441,7 @@ class addTask(QDialog, Ui_addTask):
 
         if self.action == "new":
             self.taskInfo["protocol"] = protocol
+            self.taskInfo["ipType"] = ipType
             self.taskInfo["dst_ip"] = dst_ip
             self.taskInfo["dst_port"] = port
             self.taskInfo["src_ip"] = src_ip
@@ -412,6 +452,7 @@ class addTask(QDialog, Ui_addTask):
             self.send_data.emit((task, self.taskInfo))
         elif self.action == "modify":
             TASKLIST_CONFIG[self.key]["protocol"] = protocol
+            TASKLIST_CONFIG[self.key]["ipType"] = ipType
             TASKLIST_CONFIG[self.key]["dst_ip"] = dst_ip
             TASKLIST_CONFIG[self.key]["dst_port"] = port
             TASKLIST_CONFIG[self.key]["src_ip"] = src_ip
@@ -444,25 +485,25 @@ class addTask(QDialog, Ui_addTask):
         # TODO: not implemented yet
         # raise NotImplementedError
 
-        if p0 == "238.1.238.1":
+        if p0 == "238.1.238.1" or p0 == "FE15::101:101":
             self.spinBox_port.setValue(50001)
-        elif p0 == "238.1.238.2":
+        elif p0 == "238.1.238.2" or p0 == "FE15::101:102":
             self.spinBox_port.setValue(50002)
-        elif p0 == "238.1.238.3":
+        elif p0 == "238.1.238.3" or p0 == "FE15::101:103":
             self.spinBox_port.setValue(50003)
-        elif p0 == "238.1.238.4":
+        elif p0 == "238.1.238.4" or p0 == "FE15::101:104":
             self.spinBox_port.setValue(50004)
-        elif p0 == "238.1.238.5":
+        elif p0 == "238.1.238.5" or p0 == "FE15::101:105":
             self.spinBox_port.setValue(50005)
-        elif p0 == "238.1.238.6":
+        elif p0 == "238.1.238.6" or p0 == "FE15::101:106":
             self.spinBox_port.setValue(50006)
-        elif p0 == "238.1.238.7":
+        elif p0 == "238.1.238.7" or p0 == "FE15::101:107":
             self.spinBox_port.setValue(50007)
-        elif p0 == "238.1.238.8":
+        elif p0 == "238.1.238.8" or p0 == "FE15::101:108":
             self.spinBox_port.setValue(50008)
-        elif p0 == "238.1.238.9":
+        elif p0 == "238.1.238.9" or p0 == "FE15::101:109":
             self.spinBox_port.setValue(50009)
-        elif p0 == "238.1.238.10":
+        elif p0 == "238.1.238.10" or p0 == "FE15::101:110":
             self.spinBox_port.setValue(50010)
         elif p0 == "238.1.238.11":
             self.spinBox_port.setValue(50011)
@@ -554,6 +595,44 @@ class addTask(QDialog, Ui_addTask):
         tmp = self.taskInfo["playlist"][row]
         self.taskInfo["playlist"][row] = self.taskInfo["playlist"][row+1]
         self.taskInfo["playlist"][row+1] = tmp
+    
+    @pyqtSlot(str)
+    def on_comboBox_ipType_currentTextChanged(self, p0):
+        """
+        Slot documentation goes here.
+        
+        @param p0 DESCRIPTION
+        @type str
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        if p0 == "IPv4":
+            self.ipType = "ipv4"
+        elif p0 == "IPv6":
+            self.ipType = "ipv6"
+        else:
+            pass
+        self.comboBox_dst_ip.clear()
+        self.comboBox_ip.clear()
+        self.addDstIp()
+        self.on_pushButton_refresh_clicked()
+
+    def addDstIp(self):
+        if self.ipType == "ipv4":
+            index = 0
+        elif self.ipType == "ipv6":
+            index = 1
+        else:
+            return
+
+        i = 1
+        self.comboBox_dst_ip.addItem("")
+        self.comboBox_dst_ip.setItemText(i, self.translate("MainWindow", ''))
+        for ip in self.dstIpList[index]:
+            self.comboBox_dst_ip.addItem("")
+            self.comboBox_dst_ip.setItemText(i, self.translate("MainWindow", ip))
+            i += 1
+
 
 
 

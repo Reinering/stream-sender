@@ -8,11 +8,8 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"
-PackageTime = "202111191656"
-RUNTIMEENV = None
-LOGLEVEL = 4
-
+VERSION = "v0.1.00"PackageTime = "202207160107"RUNTIMEENV = None
+LOGLEVEL = 4
 
 
 ROOT_PATH = os.getcwd()

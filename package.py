@@ -235,9 +235,9 @@ if __name__ == "__main__":
         "pic;pic"
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
-    PackageArgs['distpath'] = r'G:\PythonAPP_Package\Stream_Sender'
+    PackageArgs['distpath'] = r'H:\PythonAPP_Package\Stream_Sender'
 
     TypeNum = 4
-    # packaging()
+    packaging()
     TypeNum = 2
     packaging()

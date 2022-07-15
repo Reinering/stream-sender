@@ -207,10 +207,18 @@ class FfmpegCorThread(QThread):
             logging.critical("协议匹配错误")
             return
 
-        outurl = '{}://{}:{}{}'.format(config["protocol"].lower(),
-                                       config["dst_ip"],
-                                       str(config["dst_port"]),
-                                       config["uri"])
+        if config["ipType"] == "ipv4":
+            outurl = '{}://{}:{}{}?localaddr={}'.format(config["protocol"].lower(),
+                                           config["dst_ip"],
+                                           str(config["dst_port"]),
+                                           config["uri"],
+                                           config["src_ip"])
+        elif config["ipType"] == "ipv6":
+            outurl = '{}://[{}]:{}{}?localaddr=[{}]'.format(config["protocol"].lower(),
+                                                        config["dst_ip"],
+                                                        str(config["dst_port"]),
+                                                        config["uri"],
+                                                        config["src_ip"])
 
         # subtitle
         if config["playlist"][config["current_index"]].__contains__("subtitleFile") \

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Module implementing tkDialog.
+Module implementing.
 author: Reiner New
-email: nbxlhc@hotmail.com.com
+email: nbxlhc@hotmail.com
 """
 
 from PyQt5 import QtCore, QtWidgets

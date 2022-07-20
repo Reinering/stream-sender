@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Module implementing MainWindow.
+Module implementing.
 author: Reiner New
-email: nbxlhc@hotmail.com.com
+email: nbxlhc@hotmail.com
 """
 
 from PyQt5.QtCore import pyqtSlot, QCoreApplication, Qt

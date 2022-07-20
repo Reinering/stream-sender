@@ -2,14 +2,14 @@
 """
 Stream Sender
 author: Reiner New
-email: nbxlhc@hotmail.com.com
+email: nbxlhc@hotmail.com
 """
 import os
 import sys
 
 # 软件版本信息
 VERSION = "v0.1.00"
-PackageTime = "202207192339"
+PackageTime = "202207202252"
 RUNTIMEENV = None
 LOGLEVEL = 4
 

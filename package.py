@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Module implementing MaintenanceWindow.
+Module implementing.
 author: Reiner New
-email: nbxlhc@hotmail.com.com
+email: nbxlhc@hotmail.com
 """
 import subprocess
 import datetime

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Stream Sender
-author: niub
-email: niub@jzkjgroup.com
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 import sys

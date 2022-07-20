@@ -2,6 +2,8 @@
 
 """
 Module implementing MainWindow.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 from PyQt5.QtCore import pyqtSignal, QThread
@@ -207,13 +209,13 @@ class FfmpegCorThread(QThread):
             logging.critical("协议匹配错误")
             return
 
-        if config["ipType"] == "ipv4":
+        if config["ipType"] == "IPv4":
             outurl = '{}://{}:{}{}?localaddr={}'.format(config["protocol"].lower(),
                                            config["dst_ip"],
                                            str(config["dst_port"]),
                                            config["uri"],
                                            config["src_ip"])
-        elif config["ipType"] == "ipv6":
+        elif config["ipType"] == "IPv6":
             outurl = '{}://[{}]:{}{}?localaddr=[{}]'.format(config["protocol"].lower(),
                                                         config["dst_ip"],
                                                         str(config["dst_port"]),
@@ -270,6 +272,8 @@ class FfmpegCorThread(QThread):
         ## log 控制
         # if LOGLEVEL <= 2:
         #     globalputs.append("-loglevel quiet")
+        if config["send_mode"] == "单个循环":
+            globalputs.append("-stream_loop -1")
         if config["playlist"][config["current_index"]].__contains__("globalputs") \
                 and config["playlist"][config["current_index"]]["globalputs"]:
             globalputs.append(config["playlist"][config["current_index"]]["globalputs"])

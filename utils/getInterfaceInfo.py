@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+"""
+Module implementing SettingDialog.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
+"""
+
 import subprocess
 import re
 import platform

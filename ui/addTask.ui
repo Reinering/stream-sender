@@ -524,6 +524,11 @@
               <string>单次</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>单个循环</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>

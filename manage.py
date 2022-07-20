@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Stream Sender
-author: niub
-email: niub@jzkjgroup.com
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202207160107"RUNTIMEENV = None
-LOGLEVEL = 4
+VERSION = "v0.1.00"
+PackageTime = "202207192339"
+RUNTIMEENV = None
+LOGLEVEL = 4
+
 
 
 ROOT_PATH = os.getcwd()

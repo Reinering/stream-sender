@@ -2,6 +2,8 @@
 
 """
 Module implementing MainWindow.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 import chardet

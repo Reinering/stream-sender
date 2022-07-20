@@ -2,8 +2,8 @@
 
 """
 Module implementing MaintenanceWindow.
-author: niub
-email: niub@jzkjgroup.com
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 import subprocess
 import datetime

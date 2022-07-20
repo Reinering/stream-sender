@@ -2,7 +2,10 @@
 
 """
 Module implementing tkDialog.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QMenu, QMessageBox, QFileDialog, QToolTip
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
@@ -44,7 +47,7 @@ class addTask(QDialog, Ui_addTask):
             r'^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$'
         ]
         self.videoFormat = ".ts"
-        self.ipType = "ipv4"
+        self.ipType = "IPv4"
         self.row = None
         self.key = None
         self.taskInfo = {"playlist": []}
@@ -65,16 +68,16 @@ class addTask(QDialog, Ui_addTask):
                 "238.1.238.10"
             ),
             (
-                "FE15::101:101",
-                "FE15::101:102",
-                "FE15::101:103",
-                "FE15::101:104",
-                "FE15::101:105",
-                "FE15::101:106",
-                "FE15::101:107",
-                "FE15::101:108",
-                "FE15::101:109",
-                "FE15::101:110",
+                "FE1E::101:101",
+                "FE1E::101:102",
+                "FE1E::101:103",
+                "FE1E::101:104",
+                "FE1E::101:105",
+                "FE1E::101:106",
+                "FE1E::101:107",
+                "FE1E::101:108",
+                "FE1E::101:109",
+                "FE1E::101:110",
             )
         )
 
@@ -120,6 +123,7 @@ class addTask(QDialog, Ui_addTask):
         self.comboBox_sendMode.setCurrentText(TASKLIST_CONFIG[key]["send_mode"])
         self.comboBox_protocol.setCurrentText(TASKLIST_CONFIG[key]["protocol"])
         self.comboBox_ipType.setCurrentText(TASKLIST_CONFIG[key]["ipType"])
+        self.on_pushButton_refresh_clicked()
         self.comboBox_dst_ip.setCurrentText(TASKLIST_CONFIG[key]["dst_ip"])
         self.spinBox_port.setValue(int(TASKLIST_CONFIG[key]["dst_port"]))
         self.comboBox_videoFormat.setCurrentText(TASKLIST_CONFIG[key]["out_video_format"])
@@ -364,9 +368,9 @@ class addTask(QDialog, Ui_addTask):
         i = 0
         for addr in addrs:
             ipAddr = addr[-1][0]
-            if self.ipType == "ipv4":
+            if self.ipType == "IPv4":
                 result = re.match(self.rex_ip[0], ipAddr)
-            elif self.ipType == "ipv6":
+            elif self.ipType == "IPv6" and ipAddr[:4] != "fe80" and ipAddr[:4] != "FE80":
                 result = re.match(self.rex_ip[1], ipAddr)
             if not result:
                 continue
@@ -413,13 +417,13 @@ class addTask(QDialog, Ui_addTask):
         if not protocol:
             return
 
-        ipType = self.comboBox_ipType.currentText().lower()
+        ipType = self.comboBox_ipType.currentText()
 
         dst_ip = self.comboBox_dst_ip.currentText()
         if not dst_ip:
             QMessageBox.critical(self, "错误", "组播地址不能为空")
             return
-        if self.ipType == "ipv4" and not re.match(self.rex_ip[0], dst_ip) or self.ipType == "ipv6" and not re.match(self.rex_ip[1], dst_ip):
+        if self.ipType == "IPv4" and not re.match(self.rex_ip[0], dst_ip) or self.ipType == "IPv6" and not re.match(self.rex_ip[1], dst_ip):
             QMessageBox.critical(self, "错误", "IP地址格式错误，请重新输入")
             return
 
@@ -485,25 +489,25 @@ class addTask(QDialog, Ui_addTask):
         # TODO: not implemented yet
         # raise NotImplementedError
 
-        if p0 == "238.1.238.1" or p0 == "FE15::101:101":
+        if p0 == "238.1.238.1" or p0 == "FE1E::101:101":
             self.spinBox_port.setValue(50001)
-        elif p0 == "238.1.238.2" or p0 == "FE15::101:102":
+        elif p0 == "238.1.238.2" or p0 == "FE1E::101:102":
             self.spinBox_port.setValue(50002)
-        elif p0 == "238.1.238.3" or p0 == "FE15::101:103":
+        elif p0 == "238.1.238.3" or p0 == "FE1E::101:103":
             self.spinBox_port.setValue(50003)
-        elif p0 == "238.1.238.4" or p0 == "FE15::101:104":
+        elif p0 == "238.1.238.4" or p0 == "FE1E::101:104":
             self.spinBox_port.setValue(50004)
-        elif p0 == "238.1.238.5" or p0 == "FE15::101:105":
+        elif p0 == "238.1.238.5" or p0 == "FE1E::101:105":
             self.spinBox_port.setValue(50005)
-        elif p0 == "238.1.238.6" or p0 == "FE15::101:106":
+        elif p0 == "238.1.238.6" or p0 == "FE1E::101:106":
             self.spinBox_port.setValue(50006)
-        elif p0 == "238.1.238.7" or p0 == "FE15::101:107":
+        elif p0 == "238.1.238.7" or p0 == "FE1E::101:107":
             self.spinBox_port.setValue(50007)
-        elif p0 == "238.1.238.8" or p0 == "FE15::101:108":
+        elif p0 == "238.1.238.8" or p0 == "FE1E::101:108":
             self.spinBox_port.setValue(50008)
-        elif p0 == "238.1.238.9" or p0 == "FE15::101:109":
+        elif p0 == "238.1.238.9" or p0 == "FE1E::101:109":
             self.spinBox_port.setValue(50009)
-        elif p0 == "238.1.238.10" or p0 == "FE15::101:110":
+        elif p0 == "238.1.238.10" or p0 == "FE1E::101:110":
             self.spinBox_port.setValue(50010)
         elif p0 == "238.1.238.11":
             self.spinBox_port.setValue(50011)
@@ -606,21 +610,16 @@ class addTask(QDialog, Ui_addTask):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
-        if p0 == "IPv4":
-            self.ipType = "ipv4"
-        elif p0 == "IPv6":
-            self.ipType = "ipv6"
-        else:
-            pass
+        self.ipType = p0
         self.comboBox_dst_ip.clear()
         self.comboBox_ip.clear()
         self.addDstIp()
         self.on_pushButton_refresh_clicked()
 
     def addDstIp(self):
-        if self.ipType == "ipv4":
+        if self.ipType == "IPv4":
             index = 0
-        elif self.ipType == "ipv6":
+        elif self.ipType == "IPv6":
             index = 1
         else:
             return

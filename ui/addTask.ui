@@ -159,6 +159,25 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QComboBox" name="comboBox_ipType">
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
+          </property>
+          <item>
+           <property name="text">
+            <string>IPv4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>IPv6</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="1" column="0">
@@ -503,6 +522,11 @@
             <item>
              <property name="text">
               <string>单次</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>单个循环</string>
              </property>
             </item>
            </widget>

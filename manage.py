@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 Stream Sender
-author: niub
-email: niub@jzkjgroup.com
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202109061448"RUNTIMEENV = None
-LOGLEVEL = 2
+VERSION = "v0.1.00"
+PackageTime = "202207192339"
+RUNTIMEENV = None
+LOGLEVEL = 4
 
 
 
@@ -31,12 +33,14 @@ TASKLIST_CONFIG = {
                 "videoFile": '',
                 "subtitleFile": '',
                 "setting": {
-                  "volume": ["dB", "12.1", "增大"],
+                  "audio": {"coding": '', "volume": ["dB", "12.1", "增大"]},
+                  "video": {"scale": '', "resolution": '', "bitrate": ''},
                   "subtitle": {"addMode": ''}
                 },
+                videoInfo:'',
                 "inputs": '',
                 "outputs": '',
-                "globalputs": '',
+                "globalputs": ''
                 
             }
         ],
@@ -52,6 +56,28 @@ TASKLIST_CONFIG = {
     }
 }
 """
+
+playConfig = {
+    "streams": [
+        {
+            "info": '',
+            "": ''
+        }
+    ],
+    "videoFile": '',
+    "subtitleFile": '',
+    "setting": {
+        "audio": {"coding": '', "volume": ["dB", "12.1", "增大"]},
+        "video": {"scale": '', "resolution": '', "bitrate": ''},
+        "subtitle": {"addMode": ''}
+    },
+    "videoInfo": '',
+    "inputs": '',
+    "outputs": '',
+    "globalputs": '',
+    "type": "2"
+}
+
 
 # ffmpeg config
 FFMPEG_OPTIONS_DEFAULT = {
@@ -69,5 +95,8 @@ FFMPEG_ERRORS = [
     "is not a suitable output format",
     "Option not found",
     "Bitstream filter not found",
-    "Invalid data found when processing input"
+    "Invalid data found when processing input",
+    "EBML header parsing failed",
+    "Error reading log file"
+    "'utf-8' codec can't decode byte 0xb3 in position 0: invalid start byte"
 ]

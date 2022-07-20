@@ -294,6 +294,7 @@
      <string>设置</string>
     </property>
     <addaction name="action_exePath"/>
+    <addaction name="action_server"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="font">
@@ -389,6 +390,11 @@
     <font>
      <family>微软雅黑</family>
     </font>
+   </property>
+  </action>
+  <action name="action_server">
+   <property name="text">
+    <string>Server</string>
    </property>
   </action>
  </widget>

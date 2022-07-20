@@ -2,6 +2,8 @@
 
 """
 Module implementing FFmpegHelpDialog.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 from PyQt5.QtCore import pyqtSlot, Qt

@@ -2,6 +2,8 @@
 
 """
 Module implementing MainWindow.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 import chardet
@@ -9,14 +11,21 @@ import os
 
 
 def modifyFileCode(oldfile, newfile, code):
+    result = None
+    try:
+        with open(oldfile, 'r') as f:
+            result = f.read()
+    except UnicodeDecodeError as e:
+        print(e)
+        with open(oldfile, 'rb') as f:
+            content = f.read()
+            result = strJudgeCode(content)
+            result = content.decode(encoding=result["encoding"])
 
-    with open(oldfile, 'rb') as f:
-        filecontent = f.read()
-    result = strJudgeCode(filecontent)
-    result = filecontent.decode(encoding=result["encoding"])
-    with open(newfile, 'w', encoding=code) as f:
-        f.write(result)
-        f.flush()
+
+    with open(newfile, 'w', encoding=code) as f1:
+        f1.write(result)
+        f1.flush()
 
 def strJudgeCode(str):
     return chardet.detect(str)
@@ -51,7 +60,7 @@ def listDirFile(dir):
         if os.path.isdir(filepath):
             listDirFile(filepath)
         else:
-            print(line)
+            # print(line)
             converCode(filepath)
 
 
@@ -59,4 +68,7 @@ def listDirFile(dir):
 
 
 if __name__ == '__main__':
-    listDirFile(u'.\TRMD')
+    # listDirFile(u'.\TRMD')
+
+    modifyFileCode("../subs/NowOur-stafd.srt", "../subs/1_1", "utf-8")
+    modifyFileCode("../subs/The.Suicide.Squad.2021.1080p.HMAX.WEB-DL.DDP5.1.Atmos.H.264-FLUX.srt", "../subs/1_2", "utf-8")

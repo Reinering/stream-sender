@@ -2,6 +2,8 @@
 
 """
 Module implementing MainWindow.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 from PyQt5.QtCore import pyqtSignal, QThread
@@ -14,15 +16,9 @@ import sys
 import os
 import logging
 
-from manage import FFMPEG_ERRORS
+from manage import LOGLEVEL
 from utils.file import modifyFileCode
-
-
-def checkOutputErr(p0):
-    for err in FFMPEG_ERRORS:
-        if err in p0:
-            return True
-    return False
+from utils.video import calcScale, checkOutputErr
 
 
 # Coroutine
@@ -32,10 +28,15 @@ class FfmpegCorThread(QThread):
 
     def __init__(self, parent=None):
         super(FfmpegCorThread, self).__init__(parent)
+        self.subDir = None
         self.stopBool = False
         self.loop = asyncio.new_event_loop()
-        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', nextBool: False}}
+        self.processList = {}       # {row: {ff: ffprocess, stopBool: False, stopCode: 0, "subtitleFile": '', mvBool: False, }}
         self.resultRE = r'frame=[ ]*(\d*) fps=[ ]*([.\d]*) q=([-.\d]*) size=[ ]*([\d]*kB) time=(\d{2}:\d{2}:\d{2}.\d{2}) bitrate=[ ]*([.\d]*kbits/s) speed=[ ]*([.\d]*x)'
+
+    def setParams(self, **kwargs):
+        if kwargs.__contains__("subDir"):
+            self.subDir = kwargs["subDir"]
 
     def stop(self):
         print("结束线程", self.loop.is_running())
@@ -45,14 +46,13 @@ class FfmpegCorThread(QThread):
                 self.stopCoroutine(key)
             self.processList.clear()
             self.loop.stop()
-            shutil.rmtree("subs")
         except Exception as e:
             print(e)
 
     def run(self):
         try:
-            if not os.path.exists("./subs"):
-                os.mkdir("subs")
+            if not os.path.exists(self.subDir):
+                os.makedirs(self.subDir)
 
             asyncio.set_event_loop(self.loop)
             self.loop.run_forever()
@@ -77,7 +77,13 @@ class FfmpegCorThread(QThread):
         self.killFFByRow(row)
 
     def next(self, row):
-        self.processList[row]["nextBool"] = True
+        self.processList[row]["mvCode"] = 1
+        self.processList[row]["mvBool"] = True
+        self.killFFByRow(row)
+
+    def previous(self, row):
+        self.processList[row]["mvCode"] = 0
+        self.processList[row]["mvBool"] = True
         self.killFFByRow(row)
 
     def killFFByRow(self, row):
@@ -94,18 +100,18 @@ class FfmpegCorThread(QThread):
                                   stderr=subprocess.PIPE,
                                   shell=True)
             out = str(pp.stdout.read(), encoding="utf-8")
-            print('out:', out)
+            logging.debug('out: {}'.format(out))
         except Exception as e:
             print(e)
 
     def addCoroutine(self, row, CONFIG):
-        self.row = row
-        self.config = CONFIG
+        # self.row = row
+        # self.config = CONFIG
         if self.processList.__contains__(row):
             self.processList[row]["stopBool"] = False
             self.processList[row]["stopCode"] = 0
         else:
-            self.processList[row] = {"stopBool": False, "stopCode": 0, "nextBool": False}
+            self.processList[row] = {"stopBool": False, "stopCode": 0, "mvCode": 0, "mvBool": False}
         asyncio.run_coroutine_threadsafe(self.sendCoroutine(row, CONFIG), self.loop)
 
     async def sendCoroutine(self, row, config):
@@ -123,14 +129,18 @@ class FfmpegCorThread(QThread):
                 # subtitle file
                 if config["playlist"][i].__contains__("subtitleFile"):
                     if os.path.exists(config["playlist"][i]["subtitleFile"]):
-                        if not self.processList[row].__contains__("subtitleFile") or not os.path.exists(self.processList[row]["subtitleFile"]):
-                            subName = "{}{}_{}{}".format("subs/", row, i, '')
-                            if not os.path.exists(subName):
+                        subName = os.path.join(self.subDir, "{}_{}{}".format(row, i, '')).replace('\\', '/')
+                        if not os.path.exists(subName):
+                            try:
                                 modifyFileCode(config["playlist"][i]["subtitleFile"], subName, "utf-8")
+                                self.processList[row]["subtitleFile"] = subName
+                            except Exception as e:
+                                self.processList[row]["subtitleFile"] = config["playlist"][i]["subtitleFile"]
+                                print(e, "字幕编码修改失败, 使用原字幕", config["playlist"][i]["subtitleFile"])
+                        else:
                             self.processList[row]["subtitleFile"] = subName
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
-
                 ff = self.createFFmpy3(row, config)
                 await ff.run_async(stderr=asyncio.subprocess.PIPE)
                 self.processList[row]["ff"] = ff
@@ -156,16 +166,22 @@ class FfmpegCorThread(QThread):
                             if result:
                                 self.signal_state.emit((row, result[0]))
 
-                print("mark", self.processList[row]["stopBool"])
                 if not self.processList[row]["stopBool"]:
-                    i += 1
-                    config["current_index"] = i
-                    if self.processList[row]["nextBool"]:
-                        self.processList[row]["nextBool"] = False
+                    if self.processList[row]["mvBool"]:
+                        self.processList[row]["mvBool"] = False
+                        if self.processList[row]["mvCode"]:
+                            i += 1
+                        else:
+                            if i == 0:
+                                i = len(config["playlist"]) - 1
+                            else:
+                                i -= 1
                     else:
+                        i += 1
                         if not loopBool:
                             await ff.wait()
                         self.killFFByP(ff)
+                    config["current_index"] = i
 
             if not self.processList[row]["stopBool"]:
                 config["current_index"] = 0
@@ -178,6 +194,7 @@ class FfmpegCorThread(QThread):
         inputs = {}
         outputs = {}
         globalputs = []
+        vfs = {}
 
         file = config["playlist"][config["current_index"]]["videoFile"]
 
@@ -192,10 +209,18 @@ class FfmpegCorThread(QThread):
             logging.critical("协议匹配错误")
             return
 
-        outurl = '{}://{}:{}{}'.format(config["protocol"].lower(),
-                                       config["dst_ip"],
-                                       str(config["dst_port"]),
-                                       config["uri"])
+        if config["ipType"] == "IPv4":
+            outurl = '{}://{}:{}{}?localaddr={}'.format(config["protocol"].lower(),
+                                           config["dst_ip"],
+                                           str(config["dst_port"]),
+                                           config["uri"],
+                                           config["src_ip"])
+        elif config["ipType"] == "IPv6":
+            outurl = '{}://[{}]:{}{}?localaddr=[{}]'.format(config["protocol"].lower(),
+                                                        config["dst_ip"],
+                                                        str(config["dst_port"]),
+                                                        config["uri"],
+                                                        config["src_ip"])
 
         # subtitle
         if config["playlist"][config["current_index"]].__contains__("subtitleFile") \
@@ -205,27 +230,56 @@ class FfmpegCorThread(QThread):
                 inputs[self.processList[row]["subtitleFile"]] = None
             elif config["playlist"][config["current_index"]]["setting"]["subtitle"]["addMode"] == 1:
                 if subtitle.split('.')[-1].upper() == "SRT":
-                    outParams = outParams + ' -vf subtitles={}'.format(self.processList[row]["subtitleFile"])
+                    vfs["subtitles"] = self.processList[row]["subtitleFile"].replace("\\", "/")
+                    # outParams = outParams + ' -vf subtitles={}'.format(self.processList[row]["subtitleFile"].replace("\\", "/"))
                 elif subtitle.split('.')[-1].upper() == "ASS":
-                    outParams = outParams + ' -vf "ass={}"'.format(self.processList[row]["subtitleFile"])
+                    # outParams = outParams + ' -vf "ass={}"'.format(self.processList[row]["subtitleFile"].replace("\\", "/"))
+                    vfs["ass"] = self.processList[row]["subtitleFile"].replace("\\", "/")
 
         # outputs
         if config["playlist"][config["current_index"]].__contains__("outputs") \
                 and config["playlist"][config["current_index"]]["outputs"]:
             outParams = outParams + ' ' + config["playlist"][config["current_index"]]["outputs"]
 
+        # video setting
+        if config["playlist"][config["current_index"]].__contains__("setting") \
+            and config["playlist"][config["current_index"]]["setting"].__contains__("video") \
+                and config["playlist"][config["current_index"]]["setting"]["video"]:
+
+            # video scale
+            out = calcScale(config["playlist"][config["current_index"]])
+            if out:
+                # outParams = outParams + ' ' + out
+                vfs.update(out)
+
+            # video bitrate
+            if config["playlist"][config["current_index"]]["setting"]["video"].__contains__("bitrate"):
+                outParams = outParams + ' -b {}k'.format(config["playlist"][config["current_index"]]["setting"]["video"]["bitrate"])
+
         # out_video_format
+
+        vfsStr = ''
+        for (key, value) in vfs.items():
+            vfsStr += "{}={},".format(key, value)
+        if vfsStr:
+            outParams = outParams + " -vf " + vfsStr[:-1]
         if config["out_video_format"] == "MP4":
             outParams += ' -f mpeg4'
         elif config["out_video_format"] == "TS":
             outParams += ' -f mpegts'
 
         # globalputs
+        ## log 控制
+        # if LOGLEVEL <= 2:
+        #     globalputs.append("-loglevel quiet")
+        if config["send_mode"] == "单个循环":
+            globalputs.append("-stream_loop -1")
         if config["playlist"][config["current_index"]].__contains__("globalputs") \
                 and config["playlist"][config["current_index"]]["globalputs"]:
             globalputs.append(config["playlist"][config["current_index"]]["globalputs"])
-        else:
+        if not globalputs:
             globalputs = None
+
 
         inputs[file] = inParams
         outputs[outurl] = outParams
@@ -233,5 +287,5 @@ class FfmpegCorThread(QThread):
         ff = ffmpy3.FFmpeg(inputs=inputs,
                            outputs=outputs,
                            global_options=globalputs)
-        print("cmd: ", ff.cmd, '\n')
+        logging.info("cmd: {}".format(ff.cmd))
         return ff

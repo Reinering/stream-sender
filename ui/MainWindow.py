@@ -2,6 +2,8 @@
 
 """
 Module implementing MainWindow.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 from PyQt5.QtCore import pyqtSlot, QCoreApplication, Qt
@@ -11,9 +13,11 @@ import datetime
 import decimal
 import simplejson
 import copy
+import os
+import shutil
 import logging
 
-from manage import TASKLIST_CONFIG
+from manage import TASKLIST_CONFIG, BUNDLE_DIR, RUNTIMEENV
 from .Ui_MainWindow import Ui_MainWindow
 from .addTask import addTask
 from .ffmpegHelp import FFmpegHelpDialog
@@ -43,8 +47,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.taskkey = 0            # 任务序列
         self.tasklist = []          # 任务名列表
         self.subtitlesList = []     # 字幕文件缓存
+        if RUNTIMEENV == "pyinstaller":
+            self.subDir = os.path.join("subs", BUNDLE_DIR.split('\\')[-1])
+        else:
+            self.subDir = "subs"
 
         self.ffTh = FfmpegCorThread()
+        self.ffTh.setParams(subDir=self.subDir)
         self.ffTh.signal_state.connect(self.setTaskState)
         self.ffTh.start()
 
@@ -98,7 +107,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.configPath:
             self.saveConfig(self.configPath)
             QMessageBox.information(self, "提示", "文件已保存")
-        else:
+        elif TASKLIST_CONFIG:
             self.on_action_saveas_triggered()
 
     @pyqtSlot()
@@ -108,14 +117,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
-        filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
-        if not filePath[0]:
-            return
+        if TASKLIST_CONFIG:
+            filePath = QFileDialog.getSaveFileName(self, "保存", '', "json file(*.json)")
+            if not filePath[0]:
+                return
 
-        self.saveConfig(filePath[0])
+            self.saveConfig(filePath[0])
 
-        self.configPath = filePath[0]
-        QMessageBox.information(self, "提示", "文件已保存")
+            self.configPath = filePath[0]
+            QMessageBox.information(self, "提示", "文件已保存")
 
     @pyqtSlot()
     def on_action_ffmpeg_help_triggered(self):
@@ -149,6 +159,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.ffTh.stop()
+        if RUNTIMEENV == "pyinstaller" and os.path.exists(self.subDir):
+            shutil.rmtree(self.subDir)
 
     # 查询信息添加至tableWidget中
     def addInfo(self, tableWidget, *args):
@@ -282,7 +294,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.ffTh.addCoroutine(i, config)
 
     def setTaskState(self, p0):
-        print(p0)
+        logging.info(p0)
         try:
             config = TASKLIST_CONFIG[self.tasklist[p0[0]]]
         except Exception as e:
@@ -426,7 +438,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     item = self.tableWidget.item(row, 1)
                     item.setText(self.translate("MainWindow", TASKLIST_CONFIG[self.tasklist[row]]["playlist"][TASKLIST_CONFIG[self.tasklist[row]]["current_index"]]["videoFile"].split('/')[-1]))
                 else:
-                    self.ffTh.next(row)
+                    self.ffTh.previous(row)
         except Exception as e:
             print(e)
     

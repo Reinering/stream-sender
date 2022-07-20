@@ -2,6 +2,8 @@
 
 """
 Module implementing Dialog_about.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 from PyQt5.QtCore import pyqtSlot, QCoreApplication, pyqtSignal, QRect

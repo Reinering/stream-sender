@@ -2,11 +2,14 @@
 
 """
 Module implementing SettingDialog.
+author: Reiner New
+email: nbxlhc@hotmail.com.com
 """
 
 import subprocess
 import ffmpy3
 import re
+import logging
 
 
 def getFileVolume(file):
@@ -14,7 +17,7 @@ def getFileVolume(file):
         ff = ffmpy3.FFmpeg(inputs={file: None},
                            global_options="-filter_complex volumedetect -c:v copy -f null /dev/null")
         stderr = ff.run(stderr=subprocess.PIPE)
-        print(stderr)
+        logging.debug(stderr)
         if stderr[-1]:
             result = re.findall(r'mean_volume: ([-.\d]*) dB', str(stderr[-1]))
             return result[0]

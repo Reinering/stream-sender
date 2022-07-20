@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'F:\git\stream_sender\ui\addTask.ui'
+# Form implementation generated from reading ui file 'F:\git\streamer\streamer-sender\ui\addTask.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -80,6 +80,14 @@ class Ui_addTask(object):
         self.horizontalLayout_4.addLayout(self.horizontalLayout_7)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem1)
+        self.comboBox_ipType = QtWidgets.QComboBox(self.groupBox)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.comboBox_ipType.setFont(font)
+        self.comboBox_ipType.setObjectName("comboBox_ipType")
+        self.comboBox_ipType.addItem("")
+        self.comboBox_ipType.addItem("")
+        self.horizontalLayout_4.addWidget(self.comboBox_ipType)
         self.gridLayout.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -210,6 +218,7 @@ class Ui_addTask(object):
         self.comboBox_sendMode.setObjectName("comboBox_sendMode")
         self.comboBox_sendMode.addItem("")
         self.comboBox_sendMode.addItem("")
+        self.comboBox_sendMode.addItem("")
         self.horizontalLayout_8.addWidget(self.comboBox_sendMode)
         self.horizontalLayout_2.addLayout(self.horizontalLayout_8)
         self.gridLayout.addLayout(self.horizontalLayout_2, 2, 0, 1, 1)
@@ -306,6 +315,8 @@ class Ui_addTask(object):
         self.lineEdit_task.setText(_translate("addTask", "TASK"))
         self.label_8.setText(_translate("addTask", "IP地址："))
         self.pushButton_refresh.setText(_translate("addTask", "刷新"))
+        self.comboBox_ipType.setItemText(0, _translate("addTask", "IPv4"))
+        self.comboBox_ipType.setItemText(1, _translate("addTask", "IPv6"))
         self.label_3.setText(_translate("addTask", "协议："))
         self.comboBox_protocol.setItemText(0, _translate("addTask", "UDP"))
         self.comboBox_protocol.setItemText(1, _translate("addTask", "RTP"))
@@ -332,6 +343,7 @@ class Ui_addTask(object):
         self.label_10.setText(_translate("addTask", "发送模式："))
         self.comboBox_sendMode.setItemText(0, _translate("addTask", "循环"))
         self.comboBox_sendMode.setItemText(1, _translate("addTask", "单次"))
+        self.comboBox_sendMode.setItemText(2, _translate("addTask", "单个循环"))
         self.groupBox_2.setTitle(_translate("addTask", "发送列表"))
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("addTask", "视频文件"))

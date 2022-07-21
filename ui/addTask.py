@@ -372,6 +372,8 @@ class addTask(QDialog, Ui_addTask):
                 result = re.match(self.rex_ip[0], ipAddr)
             elif self.ipType == "IPv6" and ipAddr[:4] != "fe80" and ipAddr[:4] != "FE80":
                 result = re.match(self.rex_ip[1], ipAddr)
+            else:
+                continue
             if not result:
                 continue
             self.comboBox_ip.addItem("")

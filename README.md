@@ -16,3 +16,7 @@ https://github.com/jiashaokun/ffmpeg
 https://github.com/BtbN/FFmpeg-Builds
 
 ## 请安装ffmpeg后，添加环境变量
+
+![image](public/Image20220721233109001.png)
+
+![image](public/Image20220721233124001.png)

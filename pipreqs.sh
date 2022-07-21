@@ -31,6 +31,7 @@ if [[ $1 = "install" ]]; then
 
   $PYTHON -m pip install -r $file
 else
+  rm -f requirements.txt
   pipreqs ./ --encoding=utf8
 fi
 

@@ -239,7 +239,12 @@ if __name__ == "__main__":
         "pic;pic"
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
-    PackageArgs['distpath'] = r'E:\Outputs\PythonApp_Package\Stream_Sender'
+
+    # pyVer = "3.10.4"
+    # PackageArgs['distpath'] = r'E:\Outputs\PythonApp_Package\Stream_Sender'
+
+    pyVer = "3.8.5"
+    PackageArgs['distpath'] = r'H:\PythonAPP_Package\Stream_Sender'
 
     TypeNum = 4
     packaging()

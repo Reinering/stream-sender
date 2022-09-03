@@ -14,7 +14,7 @@ import re
 Version = "v0.1.00"
 Computer_Digits = 'x64'
 TypeNum = 2
-pyVer = "3.8.5"
+pyVer = "3.10.4"
 FileList = [
     {
         'name': "main.py",
@@ -86,6 +86,10 @@ PackageArgs = {
                 'version': '3.8.5',
                 "path": r"D:\ProgramData\Anaconda3\envs\py38_64",
             },
+            {
+                'version': '3.10.4',
+                "path": r"D:\Program Files\anaconda3\envs\py310_64",
+            },
 
         ]
     }
@@ -130,7 +134,7 @@ def packaging():
     cmd = ''
     for py in PackageArgs['pyinstallerEXEList'][Computer_Digits]:
         if py['version'] == pyVer:
-            cmd = py['path'] + '\Scripts\pyinstaller.exe'
+            cmd = '"' + py['path'] + '\Scripts\pyinstaller.exe"'
             break
     if not PackageArgs['console'] or TypeNum == 4:
         cmd = cmd + ' -w'
@@ -235,7 +239,7 @@ if __name__ == "__main__":
         "pic;pic"
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
-    PackageArgs['distpath'] = r'H:\PythonAPP_Package\Stream_Sender'
+    PackageArgs['distpath'] = r'E:\Outputs\PythonApp_Package\Stream_Sender'
 
     TypeNum = 4
     packaging()

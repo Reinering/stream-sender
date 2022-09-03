@@ -14,7 +14,7 @@ import re
 Version = "v0.1.00"
 Computer_Digits = 'x64'
 TypeNum = 2
-pyVer = "3.10.4"
+pyVer = "3.8.5"
 FileList = [
     {
         'name': "main.py",

@@ -46,6 +46,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.plainTextEdit_params_in.setPlainText(FFMPEG_OPTIONS_DEFAULT["inputs"])
         self.plainTextEdit_params_out.setPlainText(FFMPEG_OPTIONS_DEFAULT["outputs"])
         self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
+        self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["urlputs"])
 
         self.initWidgetTh = InitWidgetThread()
         self.initWidgetTh.send_volume.connect(self.setVolume)
@@ -67,6 +68,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         #
         # if self.config.__contains__("globalputs") and self.config["globalputs"]:
         #     self.plainTextEdit_params_global.setPlainText(self.config["globalputs"])
+
         volume = getFileVolume(self.config["videoFile"])
         if volume:
             self.label_current_volume.setText(volume)
@@ -109,6 +111,17 @@ class SettingDialog(QDialog, Ui_Dialog):
                 self.comboBox_scale.setCurrentText(self.config["setting"]["video"]["scale"])
             if self.config["setting"]["video"].__contains__("resolution"):
                 self.comboBox_resolution.setCurrentText(self.config["setting"]["video"]["resolution"])
+
+        # 其他设置
+        if self.config["setting"].__contains__("other"):
+            if self.config["setting"]["other"].__contains__("pkt_size"):
+                self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["pkt_size"]))
+            if self.config["setting"]["other"].__contains__("local_port"):
+                self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["local_port"]))
+            if self.config["setting"]["other"].__contains__("buffer_size"):
+                self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["buffer_size"]))
+            if self.config["setting"]["other"].__contains__("ttl"):
+                self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["ttl"]))
 
 
     def closeEvent(self, a0: QCloseEvent) -> None:
@@ -193,6 +206,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         inputs = self.plainTextEdit_params_in.toPlainText()
         outputs = self.plainTextEdit_params_out.toPlainText()
         globalputs = self.plainTextEdit_params_global.toPlainText()
+        urlputs = self.plainTextEdit_params_url.toPlainText()
 
         if not self.config.__contains__("setting"):
             self.config["setting"] = {}
@@ -283,12 +297,18 @@ class SettingDialog(QDialog, Ui_Dialog):
                 self.config["setting"].pop("subtitle")
 
         # 其他设置
+        if not self.config["setting"].__contains__("other"):
+            self.config["setting"]["other"] = {}
+        self.config["setting"]["other"]["pkt_size"] = self.spinBox_pkt_size.value()
+        self.config["setting"]["other"]["local_port"] = self.spinBox_local_port.value()
+        self.config["setting"]["other"]["buffer_size"] = self.spinBox_buffer_size.value()
+        self.config["setting"]["other"]["ttl"] = self.spinBox_ttl.value()
 
         # 全局设置
-
         self.config["inputs"] = inputs.replace('\n', ' ')
         self.config["outputs"] = outputs.replace('\n', ' ')
         self.config["globalputs"] = globalputs.replace('\n', ' ')
+        self.config["urlputs"] = urlputs.replace('\n', ' ')
 
         self.signal_setting.emit((self.row,))
 

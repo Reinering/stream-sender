@@ -7,6 +7,7 @@ email: nbxlhc@hotmail.com
 """
 
 from PyQt5.QtCore import pyqtSignal, QThread
+from copy import copy
 import subprocess
 import ffmpy3
 import asyncio
@@ -209,19 +210,6 @@ class FfmpegCorThread(QThread):
             logging.critical("协议匹配错误")
             return
 
-        if config["ipType"] == "IPv4":
-            outurl = '{}://{}:{}{}?localaddr={}'.format(config["protocol"].lower(),
-                                           config["dst_ip"],
-                                           str(config["dst_port"]),
-                                           config["uri"],
-                                           config["src_ip"])
-        elif config["ipType"] == "IPv6":
-            outurl = '{}://[{}]:{}{}?localaddr=[{}]'.format(config["protocol"].lower(),
-                                                        config["dst_ip"],
-                                                        str(config["dst_port"]),
-                                                        config["uri"],
-                                                        config["src_ip"])
-
         # subtitle
         if config["playlist"][config["current_index"]].__contains__("subtitleFile") \
                 and config["playlist"][config["current_index"]]["subtitleFile"]:
@@ -280,6 +268,71 @@ class FfmpegCorThread(QThread):
         if not globalputs:
             globalputs = None
 
+        # urlputs
+        urlputs = []
+
+
+        # other
+        # url param
+        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("pkt_size") \
+            and config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]:
+            urlputs.append("pkt_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]))
+        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("local_port") \
+                and config["playlist"][config["current_index"]]["setting"]["other"]["local_port"] \
+                and int(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]) != 0:
+            urlputs.append("local_port={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]))
+        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("buffer_size") \
+                and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] \
+                and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] != 64:
+            urlputs.append("buffer_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"]))
+        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("ttl") \
+                and config["playlist"][config["current_index"]]["setting"]["other"]["ttl"] \
+                and int(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]) != 16:
+            urlputs.append("ttl={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]))
+
+        # urlputs
+        if config["playlist"][config["current_index"]].__contains__("urlputs") \
+                and config["playlist"][config["current_index"]]["urlputs"]:
+            params = config["playlist"][config["current_index"]]["urlputs"].split(' ')
+            paramscp = copy(params)
+            for param in paramscp:
+                if "pkt_size" in param:
+                    params.remove(param)
+                elif "local_port" in param:
+                    params.remove(param)
+                elif "buffer_size" in param:
+                    params.remove(param)
+                elif "ttl" in param:
+                    params.remove(param)
+                else:
+                    pass
+            urlputs.extend(params)
+
+        if config["ipType"] == "IPv4":
+            urlputs.append("localaddr={}".format(config["src_ip"]))
+        elif config["ipType"] == "IPv6":
+            urlputs.append("localaddr=[{}]".format(config["src_ip"]))
+        else:
+            logging.error("IPType error")
+        print("mark", urlputs)
+        urlputs = '&'.join(urlputs)
+        if config["ipType"] == "IPv4":
+            outurl = '{}://{}:{}{}?{}'.format(config["protocol"].lower(),
+                                                            config["dst_ip"],
+                                                            str(config["dst_port"]),
+                                                            config["uri"],
+                                                            urlputs)
+        elif config["ipType"] == "IPv6":
+            outurl = '{}://[{}]:{}{}?{}'.format(config["protocol"].lower(),
+                                                config["dst_ip"],
+                                                str(config["dst_port"]),
+                                                config["uri"],
+                                                urlputs)
+        else:
+            logging.error("IPType error")
+            return
+
+        print("mark1", outurl)
 
         inputs[file] = inParams
         outputs[outurl] = outParams

@@ -8,7 +8,7 @@ import os
 import sys
 
 # 软件版本信息
-VERSION = "v0.1.00"PackageTime = "202208091745"RUNTIMEENV = None
+VERSION = "v0.1.00"PackageTime = "202209032337"RUNTIMEENV = None
 LOGLEVEL = 4
 
 
@@ -81,6 +81,7 @@ FFMPEG_OPTIONS_DEFAULT = {
     "inputs": '-re',
     "outputs": '-c copy',       # 等于 -vcodec copy -acodec copy
     "globalputs": '',
+    "urlputs": ''
 }
 
 FFMPEG_ERRORS = [

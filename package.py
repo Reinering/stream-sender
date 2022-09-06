@@ -88,6 +88,10 @@ PackageArgs = {
             },
             {
                 'version': '3.10.4',
+                "path": r"D:\ProgramData\Anaconda3\envs\py310",
+            },
+            {
+                'version': '3.10.4',
                 "path": r"D:\Program Files\anaconda3\envs\py310_64",
             },
 
@@ -240,11 +244,12 @@ if __name__ == "__main__":
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
 
-    # pyVer = "3.10.4"
+    pyVer = "3.10.4"
     # PackageArgs['distpath'] = r'E:\Outputs\PythonApp_Package\Stream_Sender'
+    PackageArgs['distpath'] = r'F:\PythonAPP_Package\Stream_Sender'
 
-    pyVer = "3.8.5"
-    PackageArgs['distpath'] = r'H:\PythonAPP_Package\Stream_Sender'
+    # pyVer = "3.8.5"
+    # PackageArgs['distpath'] = r'H:\PythonAPP_Package\Stream_Sender'
 
     TypeNum = 4
     packaging()

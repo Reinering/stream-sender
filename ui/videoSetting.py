@@ -7,7 +7,7 @@ email: nbxlhc@hotmail.com
 """
 
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 from PyQt5.QtGui import QCloseEvent
 import time
 import subprocess
@@ -46,7 +46,7 @@ class SettingDialog(QDialog, Ui_Dialog):
         self.plainTextEdit_params_in.setPlainText(FFMPEG_OPTIONS_DEFAULT["inputs"])
         self.plainTextEdit_params_out.setPlainText(FFMPEG_OPTIONS_DEFAULT["outputs"])
         self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["globalputs"])
-        self.plainTextEdit_params_global.setPlainText(FFMPEG_OPTIONS_DEFAULT["urlputs"])
+        self.plainTextEdit_params_url.setPlainText(FFMPEG_OPTIONS_DEFAULT["urlputs"])
 
         self.initWidgetTh = InitWidgetThread()
         self.initWidgetTh.send_volume.connect(self.setVolume)
@@ -115,6 +115,8 @@ class SettingDialog(QDialog, Ui_Dialog):
         # 其他设置
         if self.config["setting"].__contains__("other"):
             if self.config["setting"]["other"].__contains__("pkt_size"):
+                self.checkBox_pkt_size.setChecked(True)
+                self.spinBox_pkt_size.setEnabled(True)
                 self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["pkt_size"]))
             if self.config["setting"]["other"].__contains__("local_port"):
                 self.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["local_port"]))
@@ -194,6 +196,18 @@ class SettingDialog(QDialog, Ui_Dialog):
         # TODO: not implemented yet
         # raise NotImplementedError
         self.spinBox_video_bitrate.setEnabled(checked)
+
+    @pyqtSlot(bool)
+    def on_checkBox_pkt_size_clicked(self, checked):
+        """
+        Slot documentation goes here.
+
+        @param checked DESCRIPTION
+        @type bool
+        """
+        # TODO: not implemented yet
+        # raise NotImplementedError
+        self.spinBox_pkt_size.setEnabled(checked)
 
     @pyqtSlot()
     def on_pushButton_ok_clicked(self):
@@ -299,10 +313,33 @@ class SettingDialog(QDialog, Ui_Dialog):
         # 其他设置
         if not self.config["setting"].__contains__("other"):
             self.config["setting"]["other"] = {}
-        self.config["setting"]["other"]["pkt_size"] = self.spinBox_pkt_size.value()
-        self.config["setting"]["other"]["local_port"] = self.spinBox_local_port.value()
-        self.config["setting"]["other"]["buffer_size"] = self.spinBox_buffer_size.value()
-        self.config["setting"]["other"]["ttl"] = self.spinBox_ttl.value()
+
+        if self.checkBox_pkt_size.isChecked():
+            self.config["setting"]["other"]["pkt_size"] = self.spinBox_pkt_size.value()
+        else:
+            if self.config["setting"]["other"].__contains__("pkt_size"):
+                self.config["setting"]["other"].pop("pkt_size")
+
+        local_port = self.spinBox_local_port.value()
+        if local_port == 0:
+            if self.config["setting"]["other"].__contains__("local_port"):
+                self.config["setting"]["other"].pop("local_port")
+        else:
+            self.config["setting"]["other"]["local_port"] = local_port
+
+        buffer_size = self.spinBox_buffer_size.value()
+        if buffer_size == 64:
+            if self.config["setting"]["other"].__contains__("buffer_size"):
+                self.config["setting"]["other"].pop("buffer_size")
+        else:
+            self.config["setting"]["other"]["buffer_size"] = buffer_size
+
+        ttl = self.spinBox_ttl.value()
+        if ttl == 16:
+            if self.config["setting"]["other"].__contains__("ttl"):
+                self.config["setting"]["other"].pop("ttl")
+        else:
+            self.config["setting"]["other"]["ttl"] = ttl
 
         # 全局设置
         self.config["inputs"] = inputs.replace('\n', ' ')
@@ -314,6 +351,7 @@ class SettingDialog(QDialog, Ui_Dialog):
 
         time.sleep(1)
         self.close()
+
     
 
 
@@ -403,6 +441,19 @@ class InitWidgetThread(QThread):
                 if self.config["setting"]["video"].__contains__("resolution"):
                     self.mainWindow.comboBox_resolution.setCurrentText(self.config["setting"]["video"]["resolution"])
 
+            # 其他设置
+            if self.config["setting"].__contains__("other"):
+                if self.mainWindow.config["setting"]["other"].__contains__("pkt_size"):
+                    self.mainWindow.checkBox_pkt_size.setChecked(True)
+                    self.mainWindow.spinBox_pkt_size.setEnabled(True)
+                    self.mainWindow.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["pkt_size"]))
+                if self.config["setting"]["other"].__contains__("local_port"):
+                    self.mainWindow.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["local_port"]))
+                if self.config["setting"]["other"].__contains__("buffer_size"):
+                    self.mainWindow.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["buffer_size"]))
+                if self.config["setting"]["other"].__contains__("ttl"):
+                    self.mainWindow.spinBox_pkt_size.setValue(int(self.config["setting"]["other"]["ttl"]))
+
         self.mainWindow.pushButton_ok.setEnabled(True)
 
         self.loop = asyncio.new_event_loop()
@@ -428,7 +479,12 @@ class InitWidgetThread(QThread):
         self.ff = ffmpy3.FFmpeg(inputs={file: None},
                                 global_options="-filter_complex volumedetect -c:v copy -f null /dev/null")
 
-        await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
+        try:
+            await self.ff.run_async(stderr=asyncio.subprocess.PIPE)
+        except Exception as e:
+            print(e)
+            logging.error(e)
+            QMessageBox.warning(self, "警告", "ffmpeg未找到")
 
         line_buf = bytearray()
         loopBool = False

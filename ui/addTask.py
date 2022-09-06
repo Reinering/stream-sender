@@ -490,8 +490,27 @@ class addTask(QDialog, Ui_addTask):
         """
         # TODO: not implemented yet
         # raise NotImplementedError
-
-        if p0 == "238.1.238.1" or p0 == "FE1E::101:101":
+        if p0 == "224.1.1.1":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.2":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.3":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.4":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.5":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.6":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.7":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.8":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.9":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "224.1.1.10":
+            self.spinBox_port.setValue(1234)
+        elif p0 == "238.1.238.1" or p0 == "FE1E::101:101":
             self.spinBox_port.setValue(50001)
         elif p0 == "238.1.238.2" or p0 == "FE1E::101:102":
             self.spinBox_port.setValue(50002)

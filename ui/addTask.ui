@@ -6,14 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>623</width>
+    <width>655</width>
     <height>430</height>
    </rect>
   </property>
   <property name="font">
-   <font>
-    <family>微软雅黑</family>
-   </font>
+   <font/>
   </property>
   <property name="windowTitle">
    <string>添加任务</string>
@@ -38,7 +36,6 @@
     <widget class="QGroupBox" name="groupBox">
      <property name="font">
       <font>
-       <family>微软雅黑</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -54,7 +51,6 @@
            <widget class="QLabel" name="label_9">
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -67,7 +63,6 @@
            <widget class="QLineEdit" name="lineEdit_task">
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -97,7 +92,6 @@
            <widget class="QLabel" name="label_8">
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -116,7 +110,6 @@
             </property>
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -135,7 +128,6 @@
             </property>
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -186,7 +178,6 @@
          <widget class="QLabel" name="label_3">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -199,7 +190,6 @@
          <widget class="QComboBox" name="comboBox_protocol">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -237,7 +227,6 @@
          <widget class="QLabel" name="label_2">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -256,7 +245,6 @@
           </property>
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -266,6 +254,56 @@
           <item>
            <property name="text">
             <string/>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.4</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.5</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.6</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.7</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.9</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>224.1.1.10</string>
            </property>
           </item>
           <item>
@@ -347,7 +385,6 @@
          <widget class="QLabel" name="label_4">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -395,7 +432,6 @@
          <widget class="QLabel" name="label_5">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -414,7 +450,6 @@
           </property>
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -445,7 +480,6 @@
          <widget class="QLabel" name="label_6">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -458,7 +492,6 @@
          <widget class="QComboBox" name="comboBox_videoFormat">
           <property name="font">
            <font>
-            <family>微软雅黑</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -498,7 +531,6 @@
            <widget class="QLabel" name="label_10">
             <property name="font">
              <font>
-              <family>微软雅黑</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -562,7 +594,6 @@
        <widget class="QTableWidget" name="tableWidget">
         <property name="font">
          <font>
-          <family>微软雅黑</family>
           <pointsize>10</pointsize>
          </font>
         </property>
@@ -575,7 +606,6 @@
          </property>
          <property name="font">
           <font>
-           <family>微软雅黑</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -586,7 +616,6 @@
          </property>
          <property name="font">
           <font>
-           <family>微软雅黑</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -597,7 +626,6 @@
          </property>
          <property name="font">
           <font>
-           <family>微软雅黑</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -613,7 +641,6 @@
       <widget class="QPushButton" name="pushButton_openPath">
        <property name="font">
         <font>
-         <family>微软雅黑</family>
          <pointsize>12</pointsize>
         </font>
        </property>
@@ -626,7 +653,6 @@
       <widget class="QPushButton" name="pushButton_up">
        <property name="font">
         <font>
-         <family>微软雅黑</family>
          <pointsize>12</pointsize>
         </font>
        </property>
@@ -639,7 +665,6 @@
       <widget class="QPushButton" name="pushButton_down">
        <property name="font">
         <font>
-         <family>微软雅黑</family>
          <pointsize>12</pointsize>
         </font>
        </property>
@@ -730,7 +755,6 @@
       <widget class="QPushButton" name="pushButton_ok">
        <property name="font">
         <font>
-         <family>微软雅黑</family>
          <pointsize>12</pointsize>
         </font>
        </property>

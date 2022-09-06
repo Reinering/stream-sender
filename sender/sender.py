@@ -7,6 +7,7 @@ email: nbxlhc@hotmail.com
 """
 
 from PyQt5.QtCore import pyqtSignal, QThread
+from PyQt5.QtWidgets import QMessageBox
 from copy import copy
 import subprocess
 import ffmpy3
@@ -143,7 +144,12 @@ class FfmpegCorThread(QThread):
                     else:
                         logging.error("字幕文件 {} 不存在".format(config["playlist"][i]["subtitleFile"]))
                 ff = self.createFFmpy3(row, config)
-                await ff.run_async(stderr=asyncio.subprocess.PIPE)
+                try:
+                    await ff.run_async(stderr=asyncio.subprocess.PIPE)
+                except Exception as e:
+                    print(e)
+                    logging.error(e)
+                    QMessageBox.warning(self, "警告", "ffmpeg未找到")
                 self.processList[row]["ff"] = ff
                 self.signal_state.emit((row, 1))
 
@@ -271,24 +277,24 @@ class FfmpegCorThread(QThread):
         # urlputs
         urlputs = []
 
-
         # other
         # url param
-        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("pkt_size") \
-            and config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]:
-            urlputs.append("pkt_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]))
-        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("local_port") \
-                and config["playlist"][config["current_index"]]["setting"]["other"]["local_port"] \
-                and int(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]) != 0:
-            urlputs.append("local_port={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]))
-        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("buffer_size") \
-                and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] \
-                and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] != 64:
-            urlputs.append("buffer_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"]))
-        if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("ttl") \
-                and config["playlist"][config["current_index"]]["setting"]["other"]["ttl"] \
-                and int(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]) != 16:
-            urlputs.append("ttl={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]))
+        if config["playlist"][config["current_index"]].__contains__("setting") and config["playlist"][config["current_index"]]["setting"].__contains__("other"):
+            if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("pkt_size") \
+                and config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]:
+                urlputs.append("pkt_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["pkt_size"]))
+            if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("local_port") \
+                    and config["playlist"][config["current_index"]]["setting"]["other"]["local_port"] \
+                    and int(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]) != 0:
+                urlputs.append("local_port={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["local_port"]))
+            if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("buffer_size") \
+                    and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] \
+                    and config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"] != 64:
+                urlputs.append("buffer_size={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["buffer_size"]))
+            if config["playlist"][config["current_index"]]["setting"]["other"].__contains__("ttl") \
+                    and config["playlist"][config["current_index"]]["setting"]["other"]["ttl"] \
+                    and int(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]) != 16:
+                urlputs.append("ttl={}".format(config["playlist"][config["current_index"]]["setting"]["other"]["ttl"]))
 
         # urlputs
         if config["playlist"][config["current_index"]].__contains__("urlputs") \
@@ -314,7 +320,7 @@ class FfmpegCorThread(QThread):
             urlputs.append("localaddr=[{}]".format(config["src_ip"]))
         else:
             logging.error("IPType error")
-        print("mark", urlputs)
+
         urlputs = '&'.join(urlputs)
         if config["ipType"] == "IPv4":
             outurl = '{}://{}:{}{}?{}'.format(config["protocol"].lower(),
@@ -331,8 +337,6 @@ class FfmpegCorThread(QThread):
         else:
             logging.error("IPType error")
             return
-
-        print("mark1", outurl)
 
         inputs[file] = inParams
         outputs[outurl] = outParams

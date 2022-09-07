@@ -71,6 +71,10 @@ PackageArgs = {
                 'version': '3.8.8',
                 "path": r"D:\ProgramData\Anaconda3\envs\py38_32",
             },
+            {
+                'version': '3.10.4',
+                "path": r"D:\ProgramData\Anaconda3\envs\py310_32",
+            },
 
         ],
         'x64': [
@@ -235,6 +239,7 @@ def packaging():
 
 
 if __name__ == "__main__":
+
     PackageArgs['isClean'] = True
     PackageArgs['hiddenImport'] = [
 
@@ -243,6 +248,9 @@ if __name__ == "__main__":
         "pic;pic"
     ]
     PackageArgs['iconPath'] = r'pic\favicon.ico'
+
+    # Computer_Digits = 'x64'
+    Computer_Digits = 'x86'
 
     pyVer = "3.10.4"
     # PackageArgs['distpath'] = r'E:\Outputs\PythonApp_Package\Stream_Sender'

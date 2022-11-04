@@ -61,9 +61,7 @@
      <widget class="QLabel" name="label_2">
       <property name="font">
        <font>
-        <family>微软雅黑</family>
         <pointsize>10</pointsize>
-        <weight>75</weight>
         <bold>true</bold>
        </font>
       </property>
@@ -79,7 +77,6 @@
      <widget class="QLabel" name="label_version">
       <property name="font">
        <font>
-        <family>微软雅黑</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -92,7 +89,6 @@
      <widget class="QLabel" name="label_package">
       <property name="font">
        <font>
-        <family>微软雅黑</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -105,7 +101,6 @@
      <widget class="QLabel" name="label_py">
       <property name="font">
        <font>
-        <family>微软雅黑</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -118,7 +113,6 @@
      <widget class="QLabel" name="label_3">
       <property name="font">
        <font>
-        <family>微软雅黑</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -132,20 +126,19 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>80</x>
+     <x>220</x>
      <y>200</y>
-     <width>401</width>
+     <width>161</width>
      <height>31</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <family>微软雅黑</family>
      <pointsize>10</pointsize>
     </font>
    </property>
    <property name="text">
-    <string>Copyright © 2018-2021  Xi'an Jizhong Intelligent Technology co.,Ltd.</string>
+    <string/>
    </property>
   </widget>
  </widget>

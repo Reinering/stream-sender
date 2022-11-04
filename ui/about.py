@@ -36,13 +36,14 @@ class Dialog_about(QDialog, Ui_Dialog):
         self.setWindowTitle(self.translate("Printer_Dialog", "关于"))
         del self.label_4
         self.label_4 = MyLabel(self)
-        self.label_4.setGeometry(QRect(80, 200, 401, 31))
+        self.label_4.setGeometry(QRect(220, 200, 160, 31))
         font = QFont()
         font.setFamily("微软雅黑")
         font.setPointSize(10)
         self.label_4.setFont(font)
         self.label_4.setObjectName("label_4")
-        self.label_4.setText(self.translate("Dialog", "Copyright © 2018-2021  Xi\'an Jizhong Intelligent Technology co.,Ltd."))
+        # self.label_4.setText(self.translate("Dialog", "Copyright © 2018-2021  Xi\'an Jizhong Intelligent Technology co.,Ltd."))
+        self.label_4.setText(self.translate("Dialog", "Copyright © 2018-2022"))
         self.label_4.signal_click.connect(self.on_label_version_click)
         self.count = 0
         self.state = False

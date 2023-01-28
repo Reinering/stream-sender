@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Y:\work_2\Projects\streamer-sender\ui\about.ui'
+# Form implementation generated from reading ui file 'Y:\work_2\Projects\streamer\streamer-sender\ui\about.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -25,7 +25,7 @@ class Ui_Dialog(object):
         self.label.setText("")
         self.label.setObjectName("label")
         self.layoutWidget = QtWidgets.QWidget(Dialog)
-        self.layoutWidget.setGeometry(QtCore.QRect(220, 40, 251, 131))
+        self.layoutWidget.setGeometry(QtCore.QRect(220, 40, 251, 171))
         self.layoutWidget.setObjectName("layoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -62,13 +62,13 @@ class Ui_Dialog(object):
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.verticalLayout.addWidget(self.label_3)
-        self.label_4 = QtWidgets.QLabel(Dialog)
-        self.label_4.setGeometry(QtCore.QRect(220, 200, 161, 31))
+        self.label_4 = QtWidgets.QLabel(self.layoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_4.setFont(font)
-        self.label_4.setText("")
+        self.label_4.setOpenExternalLinks(True)
         self.label_4.setObjectName("label_4")
+        self.verticalLayout.addWidget(self.label_4)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -81,6 +81,7 @@ class Ui_Dialog(object):
         self.label_package.setText(_translate("Dialog", "Pack Time:"))
         self.label_py.setText(_translate("Dialog", "PY version:"))
         self.label_3.setText(_translate("Dialog", "PyQt5"))
+        self.label_4.setText(_translate("Dialog", "<a href=\"https://github.com/Reinering/stream-sender.git\">@Reinering"))
 import pic_rc
 
 
